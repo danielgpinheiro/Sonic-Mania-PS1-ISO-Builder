@@ -67,12 +67,68 @@ sectors, the file index, and every file against its source.
 - **Saving** on the **memory card in slot 1** (one block, with a Mania icon): save files, Time Attack records, options.
   Without a card the game plays normally and doesn't save.
 
-## What it can't do (yet)
+## Limitations and differences from the PC version
 
-- No **Encore Mode**, Competition, replays or the Pinball bonus stage.
-- Some big sprites are at half resolution where a scene's art doesn't fit the PS1's 1 MB of video RAM.
-- The UFO stages leave out their scenery decorations and the shadows.
-- Busy scenes can drop below full speed (the PS1 has a 33 MHz CPU).
+The PS1 is far smaller than the machines Sonic Mania was made for, so this port makes trade-offs. Everything below is
+how the port behaves; it was tested in the PCSX-Redux and DuckStation emulators (DuckStation with a retail BIOS).
+
+### Frame rate and speed
+
+- **The frame rate varies.** The game draws every frame and never skips one, so when a frame takes longer than 1/60 s
+  the **game itself runs slower** for that moment (it doesn't keep its speed by dropping frames). Measured across every
+  act (average over the act; DuckStation):
+  - near full speed (55–60 fps): Chemical Plant, Stardust Speedway Act 2, Oil Ocean Act 1, Metallic Madness Act 2,
+    Lava Reef Act 3, Titanic Monarch Act 3, Green Hill Act 1;
+  - 45–55 fps: Green Hill Act 2, Flying Battery, Stardust Speedway Act 1, Hydrocity Act 1, Mirage Saloon Act 2, Lava Reef
+    Act 2, Metallic Madness Act 1, Titanic Monarch Acts 1–2;
+  - 34–43 fps, the busiest: Studiopolis (Act 1 about 34), Press Garden (35–39), Hydrocity Act 2 (37), Oil Ocean Act 2
+    (38), Egg Reverie (38), Mirage Saloon Act 1 (41), Lava Reef Act 1 (42).
+  Busy moments (many objects, several scrolling layers, big bosses) dip below an act's average for a few seconds.
+- **Boss fights** run between about 28 and 60 fps depending on the boss.
+- **The UFO special stages run at 30 fps** with two game steps per frame, so they keep their normal speed but move less
+  smoothly than on PC. The Blue Spheres bonus stages run at full speed.
+
+### Graphics
+
+- **Some sprites are at half resolution** where a scene's art doesn't fit the PS1's 1 MB of video RAM: big effects,
+  title-card and menu art in some scenes, large set pieces (Studiopolis, Press Garden, Mirage Saloon, Titanic Monarch),
+  **Super Sonic** in some zones, and in a few zones the **bosses' largest parts** (Studiopolis, Press Garden Act 2,
+  Mirage Saloon, Lava Reef Act 3, Titanic Monarch Act 3). Small sprites (players, badniks, rings, springs, the HUD's text)
+  are always full size.
+- **Fewer colours:** each player frame uses at most 15 colours, and the level art of many scenes is reduced to 15
+  colours per palette block.
+- **The UFO stages leave out their scenery decorations and the shadows.**
+- **3D and effects are approximated by the PS1's GPU:** the giant rings (solid and wireframe), lines, gradient
+  ("gouraud") shapes and some blending look close to the PC but not pixel-identical. Screen-wide tint effects other than
+  the colour inversion aren't drawn; where a scene uses more than one extra palette at once (water lines), the second
+  one shows the normal colours.
+- **Videos** (the intro, the endings) play at 320×160 and 15 fps.
+
+### Sound
+
+- **Music** is CD-XA (37.8 kHz ADPCM), so it sounds slightly duller than the PC's Ogg files.
+- **Sound effects** play at lower sample rates (8–44 kHz, each picked so a scene's set fits the 512 KB of sound RAM).
+- **The music pauses briefly** when the game loads sprites from the disc in the middle of an act: when a boss appears,
+  at the act clear and when you turn Super. The loading icon shows during these pauses (about half a second to a
+  second).
+
+### Loading
+
+- Each act, menu and special stage loads from the CD (2× speed): a few seconds with the loading icon, longer than on PC.
+
+### Not included
+
+- **Encore Mode**, **Competition** (2-player versus), the **Pinball** bonus stage, **replays** and Time Attack ghosts,
+  online leaderboards, and the other Plus additions (the Plus title screen).
+- **Sonic & Tails together** (one character at a time only; no sidekick).
+- **Time Attack** with Sonic, Tails and Knuckles only (Mighty and Ray are Mania Mode characters here).
+- The **Video** options page (no window or filter settings on the PS1) and the PC's developer menu.
+- Controller vibration.
+
+### Controls
+
+Cross / Circle / Square jump (as A / B / X on PC), **Triangle** is the Super button (Y: turn Super in the air with 50 rings
+and all Chaos Emeralds), L1 = C, R1 = Z, Start pauses.
 
 ## Plus characters
 
