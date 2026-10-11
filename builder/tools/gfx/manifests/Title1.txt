@@ -1,0 +1,10 @@
+# Title1: the sprite files (SPR) and sheets (SHT) the scene loads, in load order (tools/gfx/capture_manifests.sh, 2026-10-06)
+SPR Title/Electricity.bin
+SHT Title/Electricity1.gif
+SHT Title/Electricity2.gif
+SPR Title/Logo.bin
+SHT Title/Logo.gif
+SPR Title/Sonic.bin
+SHT Title/Sonic.gif
+SPR Title/Background.bin
+SHT Title/BG.gif
