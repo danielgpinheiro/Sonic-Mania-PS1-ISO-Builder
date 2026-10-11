@@ -48,7 +48,7 @@ So everything is converted **once, on your computer**, into formats the PS1 hard
 
 Built from the known `Data.rsdk` **without** a license file and with the tool versions listed under
 [Requirements](#requirements), the image is `SonicMania-PS1.bin` SHA-256
-`f8acccf6c3d9b39c2539445fc15582811120106974ab4f7066a2462a4d9d6149`. Other versions of FFmpeg or psxavenc
+`20732e9951207be0517724c360b033b4ac091b38a3e0933f81c75f22b70ed5e4`. Other versions of FFmpeg or psxavenc
 may encode the audio slightly differently, which changes the hash but not the game. With a license file the license
 sectors differ, so the hash does too.
 
@@ -63,7 +63,8 @@ sectors, the file index, and every file against its source.
 - **Super forms**, the transformation included.
 - **Special stages**: the UFO chases (30 fps with two logic steps a frame, so the game keeps its speed) and the
   **Blue Spheres** bonus stages.
-- **Time Attack** (Sonic, Tails, Knuckles), Options, Extras, D.A. Garden, and **Puyo Puyo** (1P and 2P).
+- **Time Attack** (Sonic, Tails, Knuckles), Options (Video: **Uncapped FPS**, see [Frame rate](#frame-rate-and-speed);
+  Sound; Controls; Data), Extras, D.A. Garden, and **Puyo Puyo** (1P and 2P).
 - **Saving** on the **memory card in slot 1** (one block, with a Mania icon): save files, Time Attack records, options.
   Without a card the game plays normally and doesn't save.
 
@@ -74,17 +75,27 @@ how the port behaves; it was tested in the PCSX-Redux and DuckStation emulators 
 
 ### Frame rate and speed
 
-- **The frame rate varies.** The game draws every frame and never skips one, so when a frame takes longer than 1/60 s
-  the **game itself runs slower** for that moment (it doesn't keep its speed by dropping frames). Measured across every
-  act (average over the act; DuckStation):
+**Options → Video → Uncapped FPS** sets how the zones run (the menus, cutscenes, Blue Spheres and Puyo Puyo always run at
+60 fps; the UFO special stages always at 30 fps):
+
+- **No** (the default): the acts run at a **steady 30 fps with two game steps per frame**, so the game keeps its normal
+  speed. Measured across every act (DuckStation): 21 of the 29 acts at full speed; Studiopolis Act 1 at about 87 %,
+  Press Garden Act 1 about 91 %, Oil Ocean Act 2 about 93 %, Studiopolis Act 2 about 96 %, Press Garden Act 2, Flying
+  Battery and Hydrocity Act 2 98–99 % (busy moments a little lower).
+- **Yes**: up to 60 fps, but the frame rate varies. The game draws every frame and never skips one, so when a frame takes
+  longer than 1/60 s the **game itself runs slower** for that moment. Measured across every act (average over the act;
+  DuckStation):
   - near full speed (55–60 fps): Chemical Plant, Stardust Speedway Act 2, Oil Ocean Act 1, Metallic Madness Act 2,
     Lava Reef Act 3, Titanic Monarch Act 3, Green Hill Act 1;
   - 45–55 fps: Green Hill Act 2, Flying Battery, Stardust Speedway Act 1, Hydrocity Act 1, Mirage Saloon Act 2, Lava Reef
     Act 2, Metallic Madness Act 1, Titanic Monarch Acts 1–2;
   - 34–43 fps, the busiest: Studiopolis (Act 1 about 34), Press Garden (35–39), Hydrocity Act 2 (37), Oil Ocean Act 2
     (38), Egg Reverie (38), Mirage Saloon Act 1 (41), Lava Reef Act 1 (42).
-  Busy moments (many objects, several scrolling layers, big bosses) dip below an act's average for a few seconds.
-- **Boss fights** run between about 28 and 60 fps depending on the boss.
+
+  Busy moments (many objects, several scrolling layers, big bosses) dip below an act's average for a few seconds. A real
+  PlayStation slows down more than the emulators, which is why No is the default.
+- The setting is kept on the memory card with the other options.
+- **Boss fights** with Uncapped FPS on Yes run between about 28 and 60 fps depending on the boss.
 - **The UFO special stages run at 30 fps** with two game steps per frame, so they keep their normal speed but move less
   smoothly than on PC. The Blue Spheres bonus stages run at full speed.
 
@@ -122,7 +133,9 @@ how the port behaves; it was tested in the PCSX-Redux and DuckStation emulators 
   online leaderboards, and the other Plus additions (the Plus title screen).
 - **Sonic & Tails together** (one character at a time only; no sidekick).
 - **Time Attack** with Sonic, Tails and Knuckles only (Mighty and Ray are Mania Mode characters here).
-- The **Video** options page (no window or filter settings on the PS1) and the PC's developer menu.
+- The PC's video settings (window size, screen filter, vsync): the **Video** page holds only Uncapped FPS. The PC's
+  developer menu.
+- **Languages** other than English (the Language option is not in Options).
 - Controller vibration.
 
 ### Controls
