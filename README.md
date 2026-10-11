@@ -48,7 +48,7 @@ So everything is converted **once, on your computer**, into formats the PS1 hard
 
 Built from the known `Data.rsdk` **without** a license file and with the tool versions listed under
 [Requirements](#requirements), the image is `SonicMania-PS1.bin` SHA-256
-`20732e9951207be0517724c360b033b4ac091b38a3e0933f81c75f22b70ed5e4`. Other versions of FFmpeg or psxavenc
+`6d32c3540cca71aa492adeb2a83324986e407cd4b653adcc59285c362fb771de`. Other versions of FFmpeg or psxavenc
 may encode the audio slightly differently, which changes the hash but not the game. With a license file the license
 sectors differ, so the hash does too.
 
@@ -85,12 +85,12 @@ how the port behaves; it was tested in the PCSX-Redux and DuckStation emulators 
 - **Yes**: up to 60 fps, but the frame rate varies. The game draws every frame and never skips one, so when a frame takes
   longer than 1/60 s the **game itself runs slower** for that moment. Measured across every act (average over the act;
   DuckStation):
-  - near full speed (55–60 fps): Chemical Plant, Stardust Speedway Act 2, Oil Ocean Act 1, Metallic Madness Act 2,
-    Lava Reef Act 3, Titanic Monarch Act 3, Green Hill Act 1;
-  - 45–55 fps: Green Hill Act 2, Flying Battery, Stardust Speedway Act 1, Hydrocity Act 1, Mirage Saloon Act 2, Lava Reef
-    Act 2, Metallic Madness Act 1, Titanic Monarch Acts 1–2;
-  - 34–43 fps, the busiest: Studiopolis (Act 1 about 34), Press Garden (35–39), Hydrocity Act 2 (37), Oil Ocean Act 2
-    (38), Egg Reverie (38), Mirage Saloon Act 1 (41), Lava Reef Act 1 (42).
+  - near full speed (55–60 fps): Green Hill Act 1, Chemical Plant, Flying Battery Act 2, Stardust Speedway Act 2,
+    Mirage Saloon Act 1, Oil Ocean Act 1, Metallic Madness Act 2;
+  - 45–55 fps: Green Hill Act 2, Studiopolis Act 2, Flying Battery Act 1, Stardust Speedway Act 1, Hydrocity Act 1,
+    Mirage Saloon Act 2, Lava Reef, Metallic Madness Act 1, Titanic Monarch;
+  - 36–42 fps, the busiest: Studiopolis Act 1 (36), Press Garden (37–42), Oil Ocean Act 2 (38), Egg Reverie (38),
+    Hydrocity Act 2 (41).
 
   Busy moments (many objects, several scrolling layers, big bosses) dip below an act's average for a few seconds. A real
   PlayStation slows down more than the emulators, which is why No is the default.
