@@ -48,7 +48,7 @@ So everything is converted **once, on your computer**, into formats the PS1 hard
 
 Built from the known `Data.rsdk` **without** a license file and with the tool versions listed under
 [Requirements](#requirements), the image is `SonicMania-PS1.bin` SHA-256
-`6d32c3540cca71aa492adeb2a83324986e407cd4b653adcc59285c362fb771de`. Other versions of FFmpeg or psxavenc
+`7004837c969d9629b3e95e89278f8a4706a60a72e7b9507fd79d95ab99c73c9d`. Other versions of FFmpeg or psxavenc
 may encode the audio slightly differently, which changes the hash but not the game. With a license file the license
 sectors differ, so the hash does too.
 
