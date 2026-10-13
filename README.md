@@ -41,14 +41,14 @@ So everything is converted **once, on your computer**, into formats the PS1 hard
 
 ## Output
 
-- `output/SonicMania-PS1.cue` + `output/SonicMania-PS1.bin`: a Mode 2 BIN/CUE image (about 509 MB). It has to be
-  BIN/CUE, not `.iso`: the CD-XA music and the videos use 2336-byte Mode 2 sectors, which a 2048-byte ISO image can't
-  hold.
+- `output/SonicMania-PS1.cue` + `output/SonicMania-PS1.bin`: a Mode 2 BIN/CUE image (about 530 MB of 2352-byte
+  sectors, 50 minutes; a CD-R's "650 / 700 MB" counts 2048 bytes a sector). It has to be BIN/CUE, not `.iso`: the
+  CD-XA music and the videos use 2336-byte Mode 2 sectors, which a 2048-byte ISO image can't hold.
 - `output/SHA256SUMS`.
 
 Built from the known `Data.rsdk` **without** a license file and with the tool versions listed under
 [Requirements](#requirements), the image is `SonicMania-PS1.bin` SHA-256
-`7004837c969d9629b3e95e89278f8a4706a60a72e7b9507fd79d95ab99c73c9d`. Other versions of FFmpeg or psxavenc
+`17a134d0b34dde891401e2b21adfcd8067c891f3190fd41e2f7023f2d893ee16`. Other versions of FFmpeg or psxavenc
 may encode the audio slightly differently, which changes the hash but not the game. With a license file the license
 sectors differ, so the hash does too.
 
