@@ -63,7 +63,8 @@ sectors, the file index, and every file against its source.
 - **Super forms**, the transformation included.
 - **Special stages**: the UFO chases (30 fps with two logic steps a frame, so the game keeps its speed) and the
   **Blue Spheres** bonus stages.
-- **Time Attack** (Sonic, Tails, Knuckles), Options (Video: **Uncapped FPS**, see [Frame rate](#frame-rate-and-speed);
+- **Time Attack** (Sonic, Tails, Knuckles), Options (Video: **Uncapped FPS** and **Frameskip**, see
+  [Frame rate](#frame-rate-and-speed);
   Sound; Controls; Data), Extras, D.A. Garden, and **Puyo Puyo** (1P and 2P).
 - **Saving** on the **memory card in slot 1** (one block, with a Mania icon): save files, Time Attack records, options.
   Without a card the game plays normally and doesn't save.
@@ -94,10 +95,17 @@ how the port behaves; it was tested in the PCSX-Redux and DuckStation emulators 
 
   Busy moments (many objects, several scrolling layers, big bosses) dip below an act's average for a few seconds. A real
   PlayStation slows down more than the emulators, which is why No is the default.
-- The setting is kept on the memory card with the other options.
+- **Options → Video → Frameskip** (Off by default) keeps the game at its normal speed when the PS1 can't keep up: a slow
+  moment draws fewer frames (down to 15 fps at worst) instead of slowing the game down. It works with either Uncapped
+  FPS setting and in the UFO special stages. Off, every frame is drawn as before. Measured (PCSX-Redux) with Uncapped
+  FPS on No: Studiopolis Act 1 from about 84 % to 93 % of full speed, Press Garden Act 1, Oil Ocean Act 2 and
+  Studiopolis Act 2 from 93–95 % to 98–99 %; the busiest UFO stages from 86–93 % to 99–100 %. Studiopolis Act 1 is the
+  one place where even 15 fps can't keep full speed.
+- Both settings are kept on the memory card with the other options.
 - **Boss fights** with Uncapped FPS on Yes run between about 28 and 60 fps depending on the boss.
 - **The UFO special stages run at 30 fps** with two game steps per frame, so they keep their normal speed but move less
-  smoothly than on PC. The Blue Spheres bonus stages run at full speed.
+  smoothly than on PC (their busiest moments slow down a little unless Frameskip is On). The Blue Spheres bonus stages
+  run at full speed.
 
 ### Graphics
 
@@ -133,8 +141,8 @@ how the port behaves; it was tested in the PCSX-Redux and DuckStation emulators 
   online leaderboards, and the other Plus additions (the Plus title screen).
 - **Sonic & Tails together** (one character at a time only; no sidekick).
 - **Time Attack** with Sonic, Tails and Knuckles only (Mighty and Ray are Mania Mode characters here).
-- The PC's video settings (window size, screen filter, vsync): the **Video** page holds only Uncapped FPS. The PC's
-  developer menu.
+- The PC's video settings (window size, screen filter, vsync): the **Video** page holds only Uncapped FPS and
+  Frameskip. The PC's developer menu.
 - **Languages** other than English (the Language option is not in Options).
 - Controller vibration.
 
