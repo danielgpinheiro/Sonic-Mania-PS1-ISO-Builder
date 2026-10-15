@@ -48,12 +48,17 @@ So everything is converted **once, on your computer**, into formats the PS1 hard
 
 Built from the known `Data.rsdk` **without** a license file and with the tool versions listed under
 [Requirements](#requirements), the image is `SonicMania-PS1.bin` SHA-256
-`fd3fa2e02a99dc346f73037425b2dc930b8839a56f4327d9de17e742266b4ef9`. Other versions of FFmpeg or psxavenc
+`555f941a02927ae1ed66c5383f2807173deccd7de6151b917fd3d6948c54f588`. Other versions of FFmpeg or psxavenc
 may encode the audio slightly differently, which changes the hash but not the game. With a license file the license
 sectors differ, so the hash does too.
 
 Before writing it, the builder verifies the image byte by byte: sector headers, EDC/ECC of every sector, the license
 sectors, the file index, and every file against its source.
+
+## What's new
+
+Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (October 2026): the disc's executable is now named
+`MANIA.EXE` instead of `PSX.EXE`.
 
 ## What the PS1 version can do
 
