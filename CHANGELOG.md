@@ -3,6 +3,23 @@
 Updates to the Sonic Mania PS1 ISO Builder, newest first. To get an update, rebuild your disc image with the new
 version of the builder (same steps as in the [README](README.md)).
 
+## Flip-bit sprites on newer consoles, 60 fps by default (October 2026)
+
+- **On consoles with the newer GPU (every PSone, most later PlayStations), mirrored level tiles and mirrored sprites
+  are now drawn with the GPU's own flip feature** instead of as textured four-corner shapes, which costs the GPU less
+  work. The game checks the GPU at start-up (nocash's GPU detection, then a tiny test drawing read back from video
+  memory): on the earliest consoles, whose GPU lacks the feature, and on emulators that don't draw it, everything is
+  drawn as before. The picture is the same either way (checked frame by frame in the DuckStation preview build, which
+  draws the feature, against the old way of drawing); not yet tested on a console.
+- **Options > Video > Uncapped FPS now defaults to Yes:** the zones and the UFO special stages run at one game step a
+  frame (the 60 fps target) unless you set it to No. Saves from an earlier version are moved to Yes once.
+- A second controller port that is empty is checked less often (it used to cost a little time every frame); a pad
+  plugged into port 2 is still found within about half a second (Puyo Puyo's two-player mode, the menus).
+- The title screen shows the new build, `v d4f959f9`.
+- Checked with the port's automated tests in PCSX-Redux (boot to the menu, the GPU check, the Flying Battery 2 memory
+  fit) and the builder's own byte-by-byte check of the image. Not yet tested on a console.
+- The image's SHA-256 changes (the new value is in the README's Output section).
+
 ## Build stamp on the title screen (October 2026)
 
 - **The title screen shows which build you are playing:** a small grey line in its bottom-left corner, e.g.
