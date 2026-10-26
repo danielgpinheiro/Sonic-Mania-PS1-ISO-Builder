@@ -109,7 +109,7 @@ void PaperRoller_DrawDeformedLine(int32 startX, int32 startY, int32 endX, int32 
 
     int32 count = (self->length / 4) + ((self->length % 4) > 0);
 #if defined RETRO_PS1_BUILD && PS1_LINE_BATCH
-    // docs/32 9q: the lines this call draws, sent at the end in one bulk (PS1DrawLinesWorld: DrawLine's INK_NONE words)
+    // docs/ports/mania/32 9q: the lines this call draws, sent at the end in one bulk (PS1DrawLinesWorld: DrawLine's INK_NONE words)
     int32 ps1Lines[4 * 64];
     uint32 ps1Colors[64];
     int32 ps1N = 0;
