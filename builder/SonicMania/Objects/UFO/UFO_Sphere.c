@@ -22,6 +22,13 @@ void UFO_Sphere_LateUpdate(void)
 {
     RSDK_THIS(UFO_Sphere);
 
+#if defined RETRO_PS1_BUILD
+    int32 w[3];
+    if (PS1GteCamSpace(self->position.x, self->height, self->position.y, w)) {
+        self->worldPos.x = w[0], self->worldPos.y = w[1], self->zdepth = w[2];
+        return;
+    }
+#endif
     int32 x = self->position.x >> 8;
     int32 y = self->height >> 8;
     int32 z = self->position.y >> 8;
@@ -39,6 +46,10 @@ void UFO_Sphere_Draw(void)
 {
     RSDK_THIS(UFO_Sphere);
 
+#if defined RETRO_PS1_BUILD
+    if (self->drawGroup == 4 && self->zdepth >= g_ps1UfoSpriteFar)
+        return; // (round 3, B3: far spheres not drawn)
+#endif
     if (self->drawGroup == 4 && self->zdepth >= 0x100) {
         self->direction = self->animator.frameID > 8;
         self->drawPos.x = (ScreenInfo->center.x + (self->worldPos.x << 8) / self->zdepth) << 16;
@@ -112,7 +123,7 @@ void UFO_Sphere_State_Fixed(void)
 
     switch (self->type) {
         case UFO_SPHERE_BLUE: {
-            foreach_active(UFO_Player, player)
+            ufo_foreach_active(UFO_Player, player)
             {
                 int32 rx = (self->position.x - player->position.x) >> 16;
                 int32 ry = (self->height - player->height - 0xA0000) >> 16;
@@ -136,7 +147,7 @@ void UFO_Sphere_State_Fixed(void)
             break;
 
         case UFO_SPHERE_MINE: {
-            foreach_active(UFO_Player, player)
+            ufo_foreach_active(UFO_Player, player)
             {
                 if (player->state != UFO_Player_State_Trip && player->state != UFO_Player_State_Springboard
                     && player->state != UFO_Player_State_UFOCaught_Charge && player->state != UFO_Player_State_UFOCaught_Released) {
@@ -164,7 +175,7 @@ void UFO_Sphere_State_Fixed(void)
             break;
         }
         case UFO_SPHERE_SPIKES: {
-            foreach_active(UFO_Player, player)
+            ufo_foreach_active(UFO_Player, player)
             {
                 if (player->state != UFO_Player_State_Trip && player->state != UFO_Player_State_Springboard
                     && player->state != UFO_Player_State_UFOCaught_Charge && player->state != UFO_Player_State_UFOCaught_Released) {

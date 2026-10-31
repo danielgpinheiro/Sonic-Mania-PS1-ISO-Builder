@@ -47,8 +47,8 @@ So everything is converted **once, on your computer**, into formats the PS1 hard
 - `output/SHA256SUMS`.
 
 Built from the known `Data.rsdk` **without** a license file and with the tool versions listed under
-[Requirements](#requirements), the image is `SonicMania-PS1.bin` SHA-256
-`ef0768ab23974a6c23519b0f9fb8d5c9fd1133dfaf763f147d4c28ed8215910e`. Other versions of FFmpeg or psxavenc
+[Requirements](#requirements) (checked with FFmpeg 9.0.2 and psxavenc v0.3.1-3-gf6757f8), the image is
+`SonicMania-PS1.bin` SHA-256 `3b7c4fb10169672b12e40fba0072374768d254ac6c102c36b7a5a5eeec2306e2`. Other versions of FFmpeg or psxavenc
 may encode the audio slightly differently, which changes the hash but not the game. With a license file the license
 sectors differ, so the hash does too.
 
@@ -57,9 +57,9 @@ sectors, the file index, and every file against its source.
 
 ## What's new
 
-Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (October 2026): mirrored tiles and sprites use the
-GPU's flip feature on consoles that have it (checked at start-up; the earliest consoles draw as before), Uncapped FPS
-(60 fps) is the default, and the title screen shows the build (`v d4f959f9`).
+Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (October 2026): faster and nicer UFO special stages,
+now always at 30 fps with two game steps per frame; the acts always aim for 60 fps (the Uncapped FPS option is gone,
+Frameskip stays); the Pinball bonus stage is in (its table not drawn yet); the title screen shows `v 7234a48f`.
 
 ## What the PS1 version can do
 
@@ -67,10 +67,10 @@ GPU's flip feature on consoles that have it (checked at start-up; the earliest c
   the endings and the credits.
 - Characters: **Sonic, Tails and Knuckles** (one at a time); with `--plus-characters` also **Mighty and Ray**.
 - **Super forms**, the transformation included.
-- **Special stages**: the UFO chases (30 fps with two logic steps a frame, so the game keeps its speed) and the
-  **Blue Spheres** bonus stages.
-- **Time Attack** (Sonic, Tails, Knuckles), Options (Video: **Uncapped FPS** and **Frameskip**, see
-  [Frame rate](#frame-rate-and-speed);
+- **Special stages**: the UFO chases (30 fps with two logic steps a frame, so the game keeps its speed), the
+  **Blue Spheres** bonus stages and, once every Blue Spheres gold medal is collected, the **Pinball** bonus stage from
+  the star posts, as in Mania Plus (see [Pinball](#pinball)).
+- **Time Attack** (Sonic, Tails, Knuckles), Options (Video: **Frameskip**, see [Frame rate](#frame-rate-and-speed);
   Sound; Controls; Data), Extras, D.A. Garden, and **Puyo Puyo** (1P and 2P).
 - **Saving** on the **memory card in slot 1** (one block, with a Mania icon): save files, Time Attack records, options.
   Without a card the game plays normally and doesn't save.
@@ -82,36 +82,27 @@ how the port behaves; it was tested in the PCSX-Redux and DuckStation emulators 
 
 ### Frame rate and speed
 
-**Options → Video → Uncapped FPS** sets how the zones run (the menus, cutscenes, Blue Spheres and Puyo Puyo always run at
-60 fps; the UFO special stages always at 30 fps):
+The acts, menus, cutscenes, Blue Spheres, Pinball and Puyo Puyo run at **up to 60 fps** with one game step per frame;
+the **UFO special stages always run at a steady 30 fps with two game steps per frame**, so they keep their normal speed
+(their busiest moments ran at 30-40 fps at one step).
 
-- **No** (the default): the acts run at a **steady 30 fps with two game steps per frame**, so the game keeps its normal
-  speed. Measured across every act (DuckStation): 21 of the 29 acts at full speed; Studiopolis Act 1 at about 87 %,
-  Press Garden Act 1 about 91 %, Oil Ocean Act 2 about 93 %, Studiopolis Act 2 about 96 %, Press Garden Act 2, Flying
-  Battery and Hydrocity Act 2 98–99 % (busy moments a little lower).
-- **Yes**: up to 60 fps, but the frame rate varies. The game draws every frame and never skips one, so when a frame takes
-  longer than 1/60 s the **game itself runs slower** for that moment. Measured across every act (average over the act;
-  DuckStation):
-  - near full speed (55–60 fps): Green Hill Act 1, Chemical Plant, Flying Battery Act 2, Stardust Speedway Act 2,
-    Mirage Saloon Act 1, Oil Ocean Act 1, Metallic Madness Act 2;
-  - 45–55 fps: Green Hill Act 2, Studiopolis Act 2, Flying Battery Act 1, Stardust Speedway Act 1, Hydrocity Act 1,
-    Mirage Saloon Act 2, Lava Reef, Metallic Madness Act 1, Titanic Monarch;
-  - 36–42 fps, the busiest: Studiopolis Act 1 (36), Press Garden (37–42), Oil Ocean Act 2 (38), Egg Reverie (38),
-    Hydrocity Act 2 (41).
-
-  Busy moments (many objects, several scrolling layers, big bosses) dip below an act's average for a few seconds. A real
-  PlayStation slows down more than the emulators, which is why No is the default.
+- The game draws every frame and never skips one on its own, so when a frame takes longer than 1/60 s the **game itself
+  runs slower** for that moment. Busy moments (many objects, several scrolling layers, big bosses) dip for a few
+  seconds; a real PlayStation slows down a little more than the emulators.
 - **Options → Video → Frameskip** (Off by default) keeps the game at its normal speed when the PS1 can't keep up: a slow
-  moment draws fewer frames (down to 15 fps at worst) instead of slowing the game down. It works with either Uncapped
-  FPS setting and in the UFO special stages. Off, every frame is drawn as before. Measured (PCSX-Redux) with Uncapped
-  FPS on No: Studiopolis Act 1 from about 84 % to 93 % of full speed, Press Garden Act 1, Oil Ocean Act 2 and
-  Studiopolis Act 2 from 93–95 % to 98–99 %; the busiest UFO stages from 86–93 % to 99–100 %. Studiopolis Act 1 is the
-  one place where even 15 fps can't keep full speed.
-- Both settings are kept on the memory card with the other options.
-- **Boss fights** with Uncapped FPS on Yes run between about 28 and 60 fps depending on the boss.
-- **The UFO special stages run at 30 fps** with two game steps per frame, so they keep their normal speed but move less
-  smoothly than on PC (their busiest moments slow down a little unless Frameskip is On). The Blue Spheres bonus stages
-  run at full speed.
+  moment draws fewer frames (down to 15 fps at worst) instead of slowing the game down. It works everywhere, the UFO
+  and Pinball stages included (measured in PCSX-Redux: the busiest UFO stages from 99 % to 100 % of full speed). Off,
+  every frame is drawn. The setting is kept on the memory card with the other options.
+- The **Uncapped FPS** option of earlier versions is gone: the acts always aim for 60 fps (a saved No from an older
+  version is ignored).
+
+### Pinball
+
+The Mania Plus **Pinball** bonus stage is in: once every Blue Spheres gold medal is collected, a star post's bonus
+stars lead to Pinball instead of Blue Spheres, as in Mania Plus. It is **enabled as-is for now**: the ball, flippers,
+bumpers, rings, the backglass and the score work, but **the pinball table's floor and its scrolling background are not
+drawn yet** (a dark backdrop shows instead), and the target bumpers keep a fixed colour. Finishing it is the port's
+next Pinball step.
 
 ### Graphics
 
@@ -143,12 +134,12 @@ how the port behaves; it was tested in the PCSX-Redux and DuckStation emulators 
 
 ### Not included
 
-- **Encore Mode**, **Competition** (2-player versus), the **Pinball** bonus stage, **replays** and Time Attack ghosts,
+- **Encore Mode**, **Competition** (2-player versus), **replays** and Time Attack ghosts,
   online leaderboards, and the other Plus additions (the Plus title screen).
 - **Sonic & Tails together** (one character at a time only; no sidekick).
 - **Time Attack** with Sonic, Tails and Knuckles only (Mighty and Ray are Mania Mode characters here).
-- The PC's video settings (window size, screen filter, vsync): the **Video** page holds only Uncapped FPS and
-  Frameskip. The PC's developer menu.
+- The PC's video settings (window size, screen filter, vsync): the **Video** page holds only Frameskip. The PC's
+  developer menu.
 - **Languages** other than English (the Language option is not in Options).
 - Controller vibration.
 

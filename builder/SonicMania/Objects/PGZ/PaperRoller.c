@@ -213,6 +213,61 @@ void PaperRoller_DrawDeformedLine(int32 startX, int32 startY, int32 endX, int32 
 #undef PS1_PAPER_LINE
 }
 
+#if defined RETRO_PS1_BUILD && PS1_LINE_BATCH
+// docs/ports/mania/32 9u: PaperRoller_DrawPaperLines' three DrawDeformedLine calls a side compute the same points (only the final
+// offset and the colour differ): the points once (the sines / cosines of the two angles read once, every expression as
+// DrawDeformedLine's), then the three calls' line batches in their order, the offset added to each end as there. PSZ1's
+// rollers: ~190 hblanks a frame of this math at the busiest spot. A side of more than 64 segments (DrawDeformedLine draws
+// the rest one by one, before its batch) keeps the stock calls.
+// 9v.6: a segment's end is the next one's start (DrawDeformedLine's second point is current + move, the next segment's
+// first): each of the count + 1 vertices computed once (vx / vy), not twice (two divisions a point)
+static int32 PaperRoller_PS1Points(int32 startX, int32 startY, int32 endX, int32 endY, int32 deformX, int32 deformY, int32 len,
+                                   int32 *vx, int32 *vy, uint32 *colIndex)
+{
+    RSDK_THIS(PaperRoller);
+    int32 count = (self->length / 4) + ((self->length % 4) > 0);
+    if (!count || count > 64)
+        return count ? -1 : 0;
+    int32 negAngle = -self->angle & 0xFF;
+    int32 sinA = RSDK.Sin256(self->angle), cosA = RSDK.Cos256(self->angle);
+    int32 sinN = RSDK.Sin256(negAngle), cosN = RSDK.Cos256(negAngle);
+    int32 currentX = startX, currentY = startY;
+    int32 moveX = (endX - startX) / count, moveY = (endY - startY) / count;
+    // (both of DrawDeformedLine's length expressions are the same sums)
+    const int32 lenA = abs((self->length << 15) - deformX), lenB = abs(deformX + (self->length << 15));
+    for (int32 k = 0; k <= count; ++k) {
+        if (k < count)
+            colIndex[k] = (uint32)(self->direction ? ((len + k) % count) : (count - (len + k) % count - 1));
+        if (!deformY) {
+            vx[k] = currentX, vy[k] = currentY;
+        }
+        else {
+            int32 distX = (currentX - self->position.x) >> 8;
+            int32 distY = (currentY - self->position.y) >> 8;
+            int32 angValX = distY * sinA + distX * cosA;
+            int32 angValY = self->position.y - distX * sinA + distY * cosA - self->position.y;
+            int32 lenY = 0;
+            if (angValX >= deformX) {
+                if (lenA >> 16 > 0)
+                    lenY = (deformY >> 8) * ((lenA + deformX - angValX) >> 8) / (lenA >> 16);
+            }
+            else {
+                if (lenB >> 16 > 0)
+                    lenY = (deformY >> 8) * (((self->length << 15) + angValX) >> 8) / (lenB >> 16);
+            }
+            distX = angValX >> 8;
+            distY = (lenY + angValY) >> 8;
+            vx[k] = self->position.x + distY * sinN + distX * cosN;
+            vy[k] = self->position.y - distX * sinN + distY * cosN;
+        }
+        currentX += moveX;
+        currentY += moveY;
+    }
+    return count;
+}
+
+#endif
+
 void PaperRoller_DrawPaperLines(void)
 {
     RSDK_THIS(PaperRoller);
@@ -233,8 +288,20 @@ void PaperRoller_DrawPaperLines(void)
     int32 endX2   = x1 + 0x1800 * RSDK.Cos256(self->angle + 64);
     int32 endY2   = y1 + 0x1800 * RSDK.Sin256(self->angle + 64);
 
+#if defined RETRO_PS1_BUILD && PS1_LINE_BATCH
+    int32 ps1Vx[2][65], ps1Vy[2][65];
+    uint32 ps1Col[2][64];
+    int32 ps1N1 = PaperRoller_PS1Points(startX1, startY1, endX1, endY1, self->deformPosTop.x, self->deformPosTop.y, 0, ps1Vx[0], ps1Vy[0], ps1Col[0]);
+    int32 ps1N2 = PaperRoller_PS1Points(startX2, startY2, endX2, endY2, self->deformPosBottom.x, self->deformPosBottom.y, len, ps1Vx[1], ps1Vy[1],
+                                        ps1Col[1]);
+    bool32 ps1Fast = ps1N1 >= 0 && ps1N2 >= 0;
+    if (!ps1Fast) {
+#endif
     PaperRoller_DrawDeformedLine(startX1, startY1, endX1, endY1, 0, 0, self->deformPosTop.x, self->deformPosTop.y, 0, NULL);
     PaperRoller_DrawDeformedLine(startX2, startY2, endX2, endY2, 0, 0, self->deformPosBottom.x, self->deformPosBottom.y, len, NULL);
+#if defined RETRO_PS1_BUILD && PS1_LINE_BATCH
+    }
+#endif
 
     int32 angle = self->angle + 32;
     if (angle < 0)
@@ -262,6 +329,44 @@ void PaperRoller_DrawPaperLines(void)
             offsetX2 = -0x10000;
             break;
     }
+#if defined RETRO_PS1_BUILD && PS1_LINE_BATCH
+    if (ps1Fast) { // the stock order: top 0, bottom 0, top 1, bottom 1, top 2, bottom 2 (each call's batch)
+        // a line whose two ends are both left of, right of, above or below the screen's drawing area (4 pixels of margin
+        // past the 320 x 240 area) has no pixel in it: not sent (the same pictures; PSZ1's rollers off screen sent ~2,000
+        // of them a frame). 9v.6: the vertices' screen positions and the colours once a side (the offsets are whole
+        // pixels: FROM_FIXED(p + k * 0x10000) = FROM_FIXED(p) + k)
+        int32 lines[4 * 64];
+        uint32 colors[64];
+        int32 sx[2][65], sy[2][65];
+        uint32 col[2][64];
+        const int32 scrX = ScreenInfo->position.x, scrY = ScreenInfo->position.y;
+        for (int32 side = 0; side < 2; ++side) {
+            int32 n = side ? ps1N2 : ps1N1;
+            for (int32 k = 0; k <= n && n; ++k) sx[side][k] = FROM_FIXED(ps1Vx[side][k]) - scrX, sy[side][k] = FROM_FIXED(ps1Vy[side][k]) - scrY;
+            for (int32 i = 0; i < n; ++i) col[side][i] = PaperRoller->colors[(Zone->timer + ps1Col[side][i]) % n];
+        }
+        for (int32 v = 0; v < 3; ++v)
+            for (int32 side = 0; side < 2; ++side) {
+                int32 n = side ? ps1N2 : ps1N1;
+                if (!n)
+                    continue;
+                int32 ox = v * (side ? offsetX2 : offsetX1), oy = v * (side ? offsetY2 : offsetY1);
+                const int32 px = ox >> 16, py = oy >> 16;
+                const int32 *vx = ps1Vx[side], *vy = ps1Vy[side], *sxs = sx[side], *sys = sy[side];
+                int32 k = 0;
+                for (int32 i = 0; i < n; ++i) {
+                    int32 sx1 = sxs[i] + px, sy1 = sys[i] + py, sx2 = sxs[i + 1] + px, sy2 = sys[i + 1] + py;
+                    if ((sx1 < -4 && sx2 < -4) || (sx1 > 324 && sx2 > 324) || (sy1 < -4 && sy2 < -4) || (sy1 > 244 && sy2 > 244))
+                        continue;
+                    lines[4 * k] = ox + vx[i], lines[4 * k + 1] = oy + vy[i], lines[4 * k + 2] = ox + vx[i + 1], lines[4 * k + 3] = oy + vy[i + 1];
+                    colors[k++] = v == 2 ? 0xD0B898 : col[side][i];
+                }
+                if (k)
+                    PS1DrawLinesWorld(lines, colors, k);
+            }
+        return;
+    }
+#endif
     PaperRoller_DrawDeformedLine(startX1, startY1, endX1, endY1, offsetX1, offsetY1, self->deformPosTop.x, self->deformPosTop.y, 0, NULL);
     PaperRoller_DrawDeformedLine(startX2, startY2, endX2, endY2, offsetX2, offsetY2, self->deformPosBottom.x, self->deformPosBottom.y, len, NULL);
 

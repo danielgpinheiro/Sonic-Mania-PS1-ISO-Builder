@@ -3,6 +3,30 @@
 Updates to the Sonic Mania PS1 ISO Builder, newest first. To get an update, rebuild your disc image with the new
 version of the builder (same steps as in the [README](README.md)).
 
+## UFO stages at 30 fps, no Uncapped FPS option, Pinball in (October 2026)
+
+- **The UFO special stages always run at a steady 30 fps with two game steps per frame**, so they keep their normal
+  speed (their heavy parts ran at 30-40 fps at one step). Measured in PCSX-Redux over each stage's chase: UFO1-4 and
+  UFO7 at full speed, UFO5 and UFO6 at 99 % (100 % with Frameskip On).
+- **The UFO stages are lighter and look better:** many speed passes (the skies drawn from pre-rendered strips, the floor's
+  far distance drawn from a coarser map, the 3D models in their lower-detail versions, the object updates and sorting in
+  faster code); the floor's near tiles extend to 20 tiles with smoother 8x8 textures from 10 tiles away (mipmaps); rings
+  and spheres appear farther away (a sixth of their full size); two GPU savings in UFO7. The scenery decorations and
+  shadows stay off.
+- **Options → Video → Uncapped FPS is gone:** the acts, Blue Spheres, Pinball and the menus always aim for 60 fps; a saved
+  No from an earlier version is ignored. **Frameskip** is now the Video page's only option and works everywhere.
+- **The Pinball bonus stage is in**, reached as in Mania Plus once every Blue Spheres gold medal is collected (a star
+  post's bonus stars). It is enabled as-is: **its table floor and scrolling background are not drawn yet**, and the target
+  bumpers keep a fixed colour. Its music and sounds are included.
+- The acts are faster too (background drawing, the object update scan and the tile drawing in hand-written assembly,
+  coarser far background scrolling where it doesn't show).
+- The title screen shows the new build, `v 7234a48f`.
+- Checked with the port's automated tests in PCSX-Redux (the full Mania set: boot, Green Hill 1, the special-stage route,
+  the UFO 1 speed guard, the Flying Battery 2 memory fit) and the builder's own byte-by-byte check of the image. The
+  builder's image (from `Data.rsdk`, 79 minutes) equals the port's own disc byte for byte except the two intro videos,
+  which this run encoded with a newer FFmpeg (9.0.2). Not yet tested on a console.
+- The image's SHA-256 changes (the new value is in the README's Output section).
+
 ## Flip-bit sprites on newer consoles, 60 fps by default (October 2026)
 
 - **On consoles with the newer GPU (every PSone, most later PlayStations), mirrored level tiles and mirrored sprites
