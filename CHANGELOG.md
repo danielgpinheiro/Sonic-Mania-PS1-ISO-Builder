@@ -3,6 +3,21 @@
 Updates to the Sonic Mania PS1 ISO Builder, newest first. To get an update, rebuild your disc image with the new
 version of the builder (same steps as in the [README](README.md)).
 
+## Menus fit the 320-pixel screen (October 2026)
+
+- **The corner button prompts are full size again and sit lower:** the button icon was drawn at three-quarter size (the
+  GPU sampled it unevenly, so it looked pixelated). It draws at the artist's size now (19-20 px of ink instead of 12-15),
+  and both rows moved down, leaving an 8-px margin above them. The second row overlaps the top of the heading banner,
+  which is intended: no page content is touched (everything below y 50 is identical to the previous build).
+- **The heading banner sits 18 px lower**, giving the two prompt rows the top of the screen.
+- **The Extras page's choice panels moved 24 px left** (their right column was cut by the 320-pixel screen), and its
+  medallion panel 16 px left.
+- **The Game Options page's ON/OFF/MANIA columns moved 16 px left**, ending 22 px clear of the screen's right edge.
+- **The title screen's SEGA copyright moved 52 px left**, no longer cut at the right edge (it now ends at x 305).
+- Everything else is as in the previous update: the acts aim for 60 fps with no frame skip, the UFO special stages run at
+  30 fps with two game steps a frame, Frameskip is the Video page's only option, and the Pinball bonus stage is in (its
+  table not drawn yet).
+
 ## UFO stages at 30 fps, no Uncapped FPS option, Pinball in (October 2026)
 
 - **The UFO special stages always run at a steady 30 fps with two game steps per frame**, so they keep their normal

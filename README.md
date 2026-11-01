@@ -41,14 +41,14 @@ So everything is converted **once, on your computer**, into formats the PS1 hard
 
 ## Output
 
-- `output/SonicMania-PS1.cue` + `output/SonicMania-PS1.bin`: a Mode 2 BIN/CUE image (about 530 MB of 2352-byte
+- `output/SonicMania-PS1.cue` + `output/SonicMania-PS1.bin`: a Mode 2 BIN/CUE image (about 540 MB of 2352-byte
   sectors, 50 minutes; a CD-R's "650 / 700 MB" counts 2048 bytes a sector). It has to be BIN/CUE, not `.iso`: the
   CD-XA music and the videos use 2336-byte Mode 2 sectors, which a 2048-byte ISO image can't hold.
 - `output/SHA256SUMS`.
 
 Built from the known `Data.rsdk` **without** a license file and with the tool versions listed under
 [Requirements](#requirements) (checked with FFmpeg 9.0.2 and psxavenc v0.3.1-3-gf6757f8), the image is
-`SonicMania-PS1.bin` SHA-256 `3b7c4fb10169672b12e40fba0072374768d254ac6c102c36b7a5a5eeec2306e2`. Other versions of FFmpeg or psxavenc
+`SonicMania-PS1.bin` SHA-256 `3dfd457415b8c752ad4ac9cbdbf4ef294d2cf5229883ace74134cd1db96af07d`. Other versions of FFmpeg or psxavenc
 may encode the audio slightly differently, which changes the hash but not the game. With a license file the license
 sectors differ, so the hash does too.
 
@@ -57,9 +57,11 @@ sectors, the file index, and every file against its source.
 
 ## What's new
 
-Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (October 2026): faster and nicer UFO special stages,
-now always at 30 fps with two game steps per frame; the acts always aim for 60 fps (the Uncapped FPS option is gone,
-Frameskip stays); the Pinball bonus stage is in (its table not drawn yet); the title screen shows `v 7234a48f`.
+Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (October 2026): the menus fit the 320-pixel screen — the
+corner button prompts are full size again and sit lower, the heading banner 18 px lower, the Extras and Game Options
+choices clear of the right edge, the title screen's copyright no longer cut; the title screen shows `v 6fba620c`. Before
+that: faster and nicer UFO special stages, always at 30 fps with two game steps per frame; the acts aim for 60 fps (the
+Uncapped FPS option is gone, Frameskip stays); the Pinball bonus stage is in (its table not drawn yet).
 
 ## What the PS1 version can do
 
