@@ -3,6 +3,27 @@
 Updates to the Sonic Mania PS1 ISO Builder, newest first. To get an update, rebuild your disc image with the new
 version of the builder (same steps as in the [README](README.md)).
 
+## Faster in every act (November 2026)
+
+The game runs faster almost everywhere; nothing looks or plays differently (every change was checked frame by frame
+against the previous build), except the Oil Ocean smog, which is now drawn in slightly coarser strips. Measured in
+PCSX-Redux in CPU time per frame (a frame at 60 fps has 262 units):
+
+- **Studiopolis Act 1**, the slowest act, now averages 244 (was 273), its worst point 272 (was 308): objects that
+  wait off screen no longer retry every frame, the invisible blocks skip players out of reach, the Rock'em Sock'ems draw
+  faster.
+- **Hydrocity Acts 1 and 2**, **Lava Reef Act 1**, **Press Garden Act 2** and **Titanic Monarch Act 3**: the water and
+  heat-haze lines are computed while drawing, and changed palette rows are uploaded directly (Hydrocity 2 averages 232,
+  was 256; Press Garden 2 258, was 276; Lava Reef 1 and Titanic Monarch 3 now stay under 262 everywhere).
+- **Metallic Madness Act 1** stays under 262 everywhere (its worst point was 330): its far background draws faster.
+- **Spikes and bosses**: the giant Special Ring (55 → 32), the Metallic Madness sound checks, the Mirage Saloon
+  RollerMKII (a 102 spike, now 23), the Flying Battery electromagnets (71 → 8), the Egg Reverie emeralds, Flying
+  Battery's Tuesday network, the Stardust Speedway Funnels and Lotto Machine, Press Garden's paper rollers and crates,
+  Titanic Monarch's teeter-totters, Lava Reef's palette fades and Stardust Speedway's fireflies.
+- **Oil Ocean Act 2**: the smog costs 33 instead of 46, and the HUD under it 15 instead of 22.
+- Memory: the rotating-background code moved out of the always-loaded part of the game, so Flying Battery Act 2 has
+  twice the spare memory it had.
+
 ## Menus fit the 320-pixel screen (October 2026)
 
 - **The corner button prompts are full size again and sit lower:** the button icon was drawn at three-quarter size (the
