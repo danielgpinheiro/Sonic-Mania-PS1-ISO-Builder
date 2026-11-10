@@ -36,19 +36,19 @@ So everything is converted **once, on your computer**, into formats the PS1 hard
    - `--plus-characters`: **Mighty and Ray** in the save select (off by default, see [Plus characters](#plus-characters));
    - `--license licensea.dat` (see [The license file](#the-license-file)), `--out folder`, `--keep-work`,
      `--force` (accept a `Data.rsdk` that isn't the known release).
-4. The disc image is in `output/` after about 80 minutes on a recent Mac (the music, video and sprite conversion is
+4. The disc image is in `output/` after about three hours on a recent Mac (the sprite, music and video conversion is
    most of it).
 
 ## Output
 
-- `output/SonicMania-PS1.cue` + `output/SonicMania-PS1.bin`: a Mode 2 BIN/CUE image (about 540 MB of 2352-byte
+- `output/SonicMania-PS1.cue` + `output/SonicMania-PS1.bin`: a Mode 2 BIN/CUE image (about 545 MB of 2352-byte
   sectors, 50 minutes; a CD-R's "650 / 700 MB" counts 2048 bytes a sector). It has to be BIN/CUE, not `.iso`: the
   CD-XA music and the videos use 2336-byte Mode 2 sectors, which a 2048-byte ISO image can't hold.
 - `output/SHA256SUMS`.
 
 Built from the known `Data.rsdk` **without** a license file and with the tool versions listed under
 [Requirements](#requirements) (checked with FFmpeg 9.0.2 and psxavenc v0.3.1-3-gf6757f8), the image is
-`SonicMania-PS1.bin` SHA-256 `ddd94075f4dc733f20f451748b6062375c9aaef515e61f0f4b7d8d7f3e89226a`. Other versions of FFmpeg or psxavenc
+`SonicMania-PS1.bin` SHA-256 `2fcfe4f3d9bf0d485085770c3f1c22b6efe09bcf5cf69dff8b8d821a0371c744`. Other versions of FFmpeg or psxavenc
 may encode the audio slightly differently, which changes the hash but not the game. With a license file the license
 sectors differ, so the hash does too.
 
@@ -57,11 +57,13 @@ sectors, the file index, and every file against its source.
 
 ## What's new
 
-Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (October 2026): the menus fit the 320-pixel screen — the
-corner button prompts are full size again and sit lower, the heading banner 18 px lower, the Extras and Game Options
-choices clear of the right edge, the title screen's copyright no longer cut; the title screen shows `v 6fba620c`. Before
-that: faster and nicer UFO special stages, always at 30 fps with two game steps per frame; the acts aim for 60 fps (the
-Uncapped FPS option is gone, Frameskip stays); the Pinball bonus stage is in (its table not drawn yet).
+Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (November 2026): **the Pinball bonus stage's table is
+drawn** — both floors in perspective with their flippers, bumpers and score display, the scrolling background and the
+backdrop; the endings have their music back, the credits end on the Thanks for Playing artwork, and Time Attack offers
+Mighty and Ray; smaller fixes sharpen sprites and text, stop the click at each music loop and keep Sonic visible during
+the Angel Island warp; the title screen shows `v eaf0f1d8`. Before that: the menus fit the 320-pixel screen; faster and
+nicer UFO special stages, always at 30 fps with two game steps a frame; every act faster (Studiopolis Act 1 averages 244
+of the 262 units a 60 fps frame has); Frameskip in Options → Video.
 
 ## What the PS1 version can do
 
@@ -72,8 +74,8 @@ Uncapped FPS option is gone, Frameskip stays); the Pinball bonus stage is in (it
 - **Special stages**: the UFO chases (30 fps with two logic steps a frame, so the game keeps its speed), the
   **Blue Spheres** bonus stages and, once every Blue Spheres gold medal is collected, the **Pinball** bonus stage from
   the star posts, as in Mania Plus (see [Pinball](#pinball)).
-- **Time Attack** (Sonic, Tails, Knuckles), Options (Video: **Frameskip**, see [Frame rate](#frame-rate-and-speed);
-  Sound; Controls; Data), Extras, D.A. Garden, and **Puyo Puyo** (1P and 2P).
+- **Time Attack** (Sonic, Tails and Knuckles; with `--plus-characters` all five), Options (Video: **Frameskip**, see
+  [Frame rate and speed](#frame-rate-and-speed); Sound; Controls; Data), Extras, D.A. Garden, and **Puyo Puyo** (1P and 2P).
 - **Saving** on the **memory card in slot 1** (one block, with a Mania icon): save files, Time Attack records, options.
   Without a card the game plays normally and doesn't save.
 
@@ -101,10 +103,9 @@ the **UFO special stages always run at a steady 30 fps with two game steps per f
 ### Pinball
 
 The Mania Plus **Pinball** bonus stage is in: once every Blue Spheres gold medal is collected, a star post's bonus
-stars lead to Pinball instead of Blue Spheres, as in Mania Plus. It is **enabled as-is for now**: the ball, flippers,
-bumpers, rings, the backglass and the score work, but **the pinball table's floor and its scrolling background are not
-drawn yet** (a dark backdrop shows instead), and the target bumpers keep a fixed colour. Finishing it is the port's
-next Pinball step.
+stars lead to Pinball instead of Blue Spheres, as in Mania Plus. The table is drawn: both floors in perspective with
+their flippers, bumpers, rings and the score display, the scrolling background and the one-colour backdrop. The target
+bumpers keep the colours baked into their models (their flashes are not drawn).
 
 ### Graphics
 

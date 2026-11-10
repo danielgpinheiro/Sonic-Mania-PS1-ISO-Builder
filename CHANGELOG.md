@@ -3,6 +3,41 @@
 Updates to the Sonic Mania PS1 ISO Builder, newest first. To get an update, rebuild your disc image with the new
 version of the builder (same steps as in the [README](README.md)).
 
+## The Pinball table is drawn, and fixes across the game (November 2026)
+
+The Mania Plus **Pinball** bonus stage now draws its **table**: both floors in perspective with their flippers, bumpers,
+rings and the score display, plus the scrolling background and the one-colour backdrop behind them (a dark backdrop
+showed under the ball before). The table's map and its scrolling layer share one page of the PS1's video RAM, so the
+stage still fits in 1 MB. The target bumpers keep the colours baked into their models; their flashes are not drawn.
+
+Fixes since the last update:
+
+- **The endings have their music and sounds back**: the Bad, Good and True End videos played muted.
+- **The credits end on the Thanks for Playing artwork**, and the normal campaign's credits reach it, as on PC (until
+  now the screen showed only its background).
+- **Time Attack offers Mighty and Ray** on a disc built with `--plus-characters`, and its first track (Competition)
+  loads with the usual spinner instead of a silent wait.
+- **Game Options no longer shows the "& Knuckles" row** that the 32 silver medals used to unlock.
+- **Options → Controls draws a DualShock 1** (the PS1's own pad), not a DualShock 4.
+- **Music loops no longer click**: the CD audio fades across the seam at the loop point.
+- **Sharp again where the stage can afford it**: the shields (Green Hill 1, Chemical Plant 2, Press Garden 2 and Mirage
+  Saloon 1K), Sonic's 18 frozen frames in Press Garden 2, Knuckles' Mirage Saloon pause labels and the art both Mirage
+  Saloon bosses share, and the Main Menu's gameplay panel mask.
+- **The Plus UFO stages show their rings, spheres and pause text**: their second layouts had no sprite atlas at all.
+- **Sonic stays visible during the Angel Island warp**, the **Title screen holds 60 fps**, and the full-screen ruby
+  flash draws through the GPU chain again.
+- **Faster sprite drawing**: the common case (a full-resolution frame inside one page, no tint) now draws in one pass,
+  63 % of Green Hill 1's sprites, with the frame's GPU chain identical to the previous build.
+- The title screen shows the new build, `v eaf0f1d8`.
+
+Checked with the port's automated tests in PCSX-Redux (the quick tier: 134 PASS, 0 FAIL), the port's own disc
+verification, the exporter's checks (`SHA256SUMS` over the executable and every overlay), and the builder's own
+byte-by-byte verification of the image (sector headers, EDC/ECC, the index and every file against its source); the
+image also boots in PCSX-Redux through a retail BIOS. The image is a little larger than the previous one (545 MB): the
+sharper sprites and the new Pinball and special-stage atlases add up to a few megabytes. **The image's SHA-256 changes**
+(the new value is in the README's Output section), and the conversion now takes about three hours on a recent Mac (the
+sprite fitting is the long part).
+
 ## Faster in every act (November 2026)
 
 The game runs faster almost everywhere; nothing looks or plays differently (every change was checked frame by frame

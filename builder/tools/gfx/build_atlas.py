@@ -53,6 +53,7 @@ import vram_plan as V          # noqa: E402
 import build_tiles as T        # noqa: E402
 import rsdk5_formats as F      # noqa: E402
 import ps1_text                # noqa: E402  (docs/ports/mania/32 choice 182: the Video page's labels)
+import ps1_art                 # noqa: E402  (docs/ports/mania/63 M16: the DualShock 1 drawing)
 
 PAGE = V.PAGE
 BANK_CLUT = 0x1FF
@@ -72,6 +73,11 @@ ALWAYS_FULL_ANIMS = {('Global/TitleCard.bin', 1), ('Global/TitleCard.bin', 2), (
 # 9e: the title's rotozoom pages take 3 columns: of the logo (full since 9c: the user saw its letters blocky) only the
 # ribbon's unfurl (animation 1: red / white stripes and a star, no letters; played once as the logo enters) may be halved
 ALWAYS_FULL_ANIMS |= {('Title/Logo.bin', a) for a in (0, 2, 3, 4, 5, 6, 7, 8)}
+# Ice draws the frozen player instead of the player sprite. Keep all four poses for Sonic and Super Sonic.
+ALWAYS_FULL_ANIMS |= {('PSZ2/Ice.bin', a) for a in range(10, 18)}
+# The Menu's mask must retain its one-pixel steps. The sprite drawer already supports adjacent pages.
+DIORAMA_MASK = ('UI/Diorama.bin', 0)
+ALWAYS_FULL_ANIMS.add(DIORAMA_MASK)
 # 9c (MSZ2's title card: the SONIC MANIA strip read garbled): their text strips (<= TEXT_KEEP_H) stay full in the text
 # fallback too
 ALWAYS_TEXT_FILES = {'Global/TitleCard.bin', 'Global/HUD.bin'}
@@ -163,6 +169,8 @@ class Sheets:
     def get(self, name):
         if name not in self.px:
             im = Image.open(os.path.join(self.data, 'Sprites', name))
+            if name == ps1_art.SHEET:  # docs/ports/mania/63 M16: the Options > Controls pad drawing is a DualShock 1
+                im = ps1_art.pad_frame(im)
             self.px[name] = np.array(im)
             if name == ps1_text.SHEET:  # docs/ports/mania/32 choice 182: the PS1 Video page's labels in rows below (tools/data_disc.py)
                 self.px[name] = ps1_text.extend_sheet(self.data, self.px[name])
@@ -457,6 +465,10 @@ HALF_BOSS = {'GHZ/DDWrecker.bin', 'GHZ/DERobot.bin', 'Eggman/EggmanAll.bin',
              # 4.2d: the Hard-Boiled Heavies (bosses; in the intro cutscenes through CutsceneHBH)
              'SPZ1/Boss.bin', 'PSZ2/Shinobi.bin', 'MSZ/HeavyMystic.bin', 'LRZ3/HeavyRider.bin', 'LRZ3/HeavyKing.bin',
              'MSZ/Rogues.bin', 'Cutscene/DamagedKing.bin', 'Cutscene/HBHPile.bin', 'Cutscene/KingTMZ2.bin'}
+# 63 M3 (user 2026-11-08: "mantain the low-quality sprites on shield in stages when is necessary only"): the shields are
+# tried at native size first and halved only where the scene needs it, and never by trading a boss -- see
+# SHIELD_FULL_PLAN and build_fit_share.
+HALF_SHIELD = {'Global/Shields.bin'}
 HALF_EFFECT = {'Global/Explosions.bin', 'Global/Shields.bin', 'Global/Water.bin', 'Global/SpecialRing.bin',
                'Global/Invincible.bin', 'Global/SuperSparkle.bin', 'Global/Dust.bin', 'Global/Announcer.bin',
                'TMZ1/Portal.bin'}  # 7b.12: the ruby portal (TMZ2 / TMZ3: 20 frames of 126 x 126, 229 KB at 4-bit)
@@ -502,11 +514,14 @@ HALF_PLAN = [(LOSSY, 0), (HALF_SUPER, 32), (HALF_EFFECT, 64), (HALF_PICTURE, 96)
 # HALF_PLAN as it was (Super halved first), so no scene halves anything it did not before. Measured over every scene as
 # Sonic: GHZ, CPZ, FBZ, OOZ, MMZ, LRZ2, SSZ, TMZ2, the Title keep Super full size
 SUPER_FULL_PLAN = [step for step in HALF_PLAN[:6] if step[0] is not HALF_SUPER]
+# 63 M3: the same ladder with the shields left out of the effect steps (they stay at native size in it)
+HALF_EFFECT_NOSHIELD = HALF_EFFECT - HALF_SHIELD
+SHIELD_FULL_PLAN = [(HALF_EFFECT_NOSHIELD if f is HALF_EFFECT else f, side) for f, side in HALF_PLAN]
 # 7b.12: backdrops far larger than VRAM allows at any plan step, stored at quarter resolution (each texel drawn 4x4) at
 # 15 colours whatever the step: Titanic Monarch's sky backdrop (the Monarch, two 1024 x 1024 frames drawn mirrored)
 QUARTER = {'TMZ1/MonarchBG.bin'}
 QUARTER_CLUT = 0x140
-HALVABLE = HALF_BOSS | HALF_EFFECT | HALF_PRESENT | HALF_HUD | HALF_PICTURE | HALF_LEVEL | HALF_SUPER  # files, and (HALF_PICTURE) sheets
+HALVABLE = HALF_BOSS | HALF_EFFECT | HALF_SHIELD | HALF_PRESENT | HALF_HUD | HALF_PICTURE | HALF_LEVEL | HALF_SUPER  # files, and (HALF_PICTURE) sheets
 # reviewed by hand (the literal analysis can't follow a handle stored in an entity): in a stage, UIButton_Create sets
 # list 0 before PauseMenu (10) / UIDialog (9) set theirs; 7 = a disabled button
 ANIM_OVERRIDES = {'UI/TextEN.bin': {0, 7, 9, 10},
@@ -532,6 +547,8 @@ SCOPE_DROP_FOLDER = {'Menu': {'Players/KnuxCutsceneHPZ.bin': {4}},  # the Compet
                      # 4.2d: in the Mania-mode intro no Heavy is on screen (HeavyMystic / CutsceneHBH: no entity in
                      # Scene1, only the Encore intro makes them); HeavyMystic's StageLoad loads its sheets regardless
                      'AIZ': {'MSZ/HeavyMystic.bin': None, 'MSZ/Rogues.bin': None}}
+# Knuckles' act has no Heavy Magician, Rogues or their cutscene. Their StageLoad still loads the files.
+SCOPE_DROP_SCENE = {('MSZ', '1K'): {'MSZ/HeavyMystic.bin': None, 'MSZ/Rogues.bin': None}}
 # 4.2d: CutsceneHBH loads one file per character into self->aniFrames and animates each with its own IDs (reviewed by
 # hand from CutsceneHBH.c: LoadSprites' switch, the *Setup helpers, the states); used where CutsceneHBH is the file's
 # only loader (the entity-field analysis would give every file the union)
@@ -697,6 +714,7 @@ def select(folder, scene_id, character, files):
     for path, spr, _ in files:
         n = len(spr['anims'])
         drop = SCOPE_DROP_FOLDER.get(folder, {}).get(path, SCOPE_DROP.get(path, set()))
+        drop = SCOPE_DROP_SCENE.get((folder, scene_id.upper()), {}).get(path, drop)
         if PLUS_OWN.get(path) == character:  # 9g
             drop = set()
         elif path == 'Global/SignPost.bin' and character in PLUS_SIGNPOST:
@@ -955,6 +973,13 @@ def decode_check(clusters, vram, work, clut_maps, name):
 
 def build(data, disc_data, folder, scene_id, character='sonic', columns=None):
     name = '%s%s/%s' % (folder, scene_id, character)
+    # UFO+ layouts reserve native pause labels even when the rest of the atlas uses the text fallback.
+    msz_knuckles = (folder, scene_id.upper()) == ('MSZ', '1K')
+    keep_pause_text = KEEP_TEXT or (folder.startswith('UFO') and scene_id == '2') or msz_knuckles
+    always_full = ALWAYS_FULL_ANIMS
+    if msz_knuckles or (folder, scene_id) == ('MSZ', '1'):
+        # The two bosses share their head, body and shadow art. The sand puffs can still be reduced.
+        always_full = always_full | {('MSZ/Sandworm.bin', a) for a in range(4)}
     man = read_manifest(folder, scene_id, character)
     sheets = Sheets(data)
     files = []                                  # (path, sprite, [(anim, key)] in record order)
@@ -991,7 +1016,7 @@ def build(data, disc_data, folder, scene_id, character='sonic', columns=None):
                 if x1 > x0 and y1 > y0:
                     k = (where, sh, (x0, y0, x1 - x0, y1 - y0))
                     t = HALF_RULES.get(path, HALF_RULES.get(sh))
-                    if (path, ai) in ALWAYS_FULL_ANIMS or ((path, ai) in NEVER_HALF_ANIMS and KEEP_TEXT):
+                    if (path, ai) in always_full or ((path, ai) in NEVER_HALF_ANIMS and keep_pause_text):
                         t = None
                     prev = halvable.get(k, 0)
                     halvable[k] = None if (t is None or prev is None) else max(prev, t)
@@ -999,7 +1024,7 @@ def build(data, disc_data, folder, scene_id, character='sonic', columns=None):
                     # short strip is not text
                     textish[k] = textish.get(k, False) or path in HALF_PRESENT or path in HALF_HUD
                     alltext[k] = alltext.get(k, False) or path in ALWAYS_TEXT_FILES
-                    always_halvable[k] = always_halvable.get(k, True) and (path in HALVABLE or sh in HALVABLE)
+                    always_halvable[k] = always_halvable.get(k, True) and (path, ai) != DIORAMA_MASK and (path in HALVABLE or sh in HALVABLE)
                     quarter[k] = quarter.get(k, True) and path in QUARTER
                     if path in PLAYER_LIKE or path.startswith('Players/'):
                         charart.add(sh)
@@ -1354,14 +1379,25 @@ def build_fit(data, disc_data, folder, scene_id, character='sonic'):
     return res
 
 
+def boss_side():
+    """63 M3: the smallest side (px) the current HALF_RULES halves the bosses from; larger is sharper."""
+    return min((t for f, t in HALF_RULES.items() if f in HALF_BOSS), default=0x7FFF)
+
+
 def build_fit_share(data, disc_data, folder, scene_id, character='sonic'):
     """build() with the fewest plan steps that fit (full resolution when it all fits): SUPER_FULL_PLAN first (9l), else
-    HALF_PLAN."""
+    HALF_PLAN; 63 M3: the shields stay native when SHIELD_FULL_PLAN fits and costs no boss pixel."""
     if character == 'sonic':
         res = build_fit_plan(data, disc_data, folder, scene_id, character, SUPER_FULL_PLAN, False)
         if res is not None and res[0] is not None:
             return res
-    return build_fit_plan(data, disc_data, folder, scene_id, character, HALF_PLAN, True)
+    base = build_fit_plan(data, disc_data, folder, scene_id, character, HALF_PLAN, True)
+    if base is not None and base[0] is not None:
+        base_boss = boss_side()
+        res       = build_fit_plan(data, disc_data, folder, scene_id, character, SHIELD_FULL_PLAN, False)
+        if res is not None and res[0] is not None and boss_side() >= base_boss:
+            return res
+    return base
 
 
 def build_fit_plan(data, disc_data, folder, scene_id, character, plan, last_resort):
