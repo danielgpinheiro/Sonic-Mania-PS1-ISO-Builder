@@ -3,6 +3,14 @@
 Updates to the Sonic Mania PS1 ISO Builder, newest first. To get an update, rebuild your disc image with the new
 version of the builder (same steps as in the [README](README.md)).
 
+## The freeze when opening an act, fixed (November 2026)
+
+A regression in the previous update: after a few boss fights the game could freeze when an act was opened, with no way
+back. A boss track's sprite set was re-read a second time inside one frame, and each of those reads leaked a slice of
+the engine's memory; once enough had gone, the next act could not load and the game stopped. Fixed: each set is read
+once, a piece at a time, and the memory comes back. The act-clear frame that starts such a read also lost some of its
+drawings to a full sprite list; that is fixed too. The title screen shows `v a1c09634`.
+
 ## A player's report fixed, and boss fights that no longer stall (November 2026)
 
 Fixes for the list a player posted after testing the previous image:

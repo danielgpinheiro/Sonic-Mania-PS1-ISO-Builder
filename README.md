@@ -48,7 +48,7 @@ So everything is converted **once, on your computer**, into formats the PS1 hard
 
 Built from the known `Data.rsdk` **without** a license file and with the tool versions listed under
 [Requirements](#requirements) (checked with FFmpeg 9.0.2 and psxavenc v0.3.1-3-gf6757f8), the image is
-`SonicMania-PS1.bin` SHA-256 `c4fd65fcd58ed41dbe7c9212becde090c31725d9f9b9ff5e567f85ad11aadca3`. Other versions of FFmpeg or psxavenc
+`SonicMania-PS1.bin` SHA-256 `98cea3ccacfa1130878fdca8f58330679e70218e714e50df8f0e179407b7853c`. Other versions of FFmpeg or psxavenc
 may encode the audio slightly differently, which changes the hash but not the game. With a license file the license
 sectors differ, so the hash does too.
 
@@ -57,7 +57,9 @@ sectors, the file index, and every file against its source.
 
 ## What's new
 
-Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (November 2026): **a player's report fixed** — the
+Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (November 2026): **a regression fixed** — the freeze
+that could hit when an act was opened after a few boss fights is gone, and the act-clear frame no longer loses drawings
+to a full sprite list; title screen `v a1c09634`. Before that: a player's report fixed — the
 Chemical Plant 1 boss shows its bubble again, Sonic no longer disappears on Chemical Plant 2's sticky platforms, the fire
 shield's white edges are gone in Chemical Plant 1, a Blue Sphere jump has its sound, and the sprite set a boss track
 loads is now read a little at a time with the music waiting for it instead of starting into the drive read (the drive's

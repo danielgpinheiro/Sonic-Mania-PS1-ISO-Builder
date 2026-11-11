@@ -282,13 +282,14 @@ BOSS_SHARE = {('PSZ1', '1'): {'PSZ1/Enemies.gif'},
               ('PSZ2', '2'): {'PSZ2/Enemies.gif', 'PSZ2/Objects2.gif', 'PSZ2/Objects4.gif', 'PSZ2/Objects-Temp.gif'},
               ('MSZ', '2'): {'MSZ/Enemies.gif', 'MSZ/Objects1.gif', 'MSZ/Train.gif'},
               ('SPZ2', '1'): {'SPZ2/Enemies.gif', 'SPZ2/Objects2.gif', 'SPZ2/Objects3.gif', 'SPZ2/Electric.gif'},
-              # 63 M3b (2026-11-10, forum QA): the column CPZ1's native shields need. Sheet counts over the AmoebaDroid
-              # fight (fight_sheets.py bs_cpz1): CPZ/Enemies.gif 0 draws, CPZ/Objects.gif 0 during the fight and the act
-              # clear (157 before the warp). With them in the start group CPZ1 fits the shield ladder at its deepest
-              # step, all 163 shield frames native (start 58.2 KB against the boss group's 70 KB: the event region does
-              # not grow). CPZ2 cannot pay this way - its fight draws CPZ/Objects.gif 2132 times - and needs one more
-              # 32 KB column than its VRAM has (docs/ports/mania/32 "Forum QA reports", section 3).
-              ('CPZ', '1'): {'CPZ/Enemies.gif', 'CPZ/Objects.gif'}}
+              # 63 M3b (2026-11-10): CPZ1 was tried here too (CPZ/Enemies.gif + CPZ/Objects.gif in the start group) and
+              # it fits the combined plan - but the act still draws those sheets during the act clear, when the event
+              # region holds the `end` group instead: tour-a's sprMiss at frames 5590/6290. A share may only carry
+              # sheets the act never draws outside the start group's own time; CPZ1 pays with Super instead (SHIELDS_FIRST)
+              }
+# 9i/63 M3b-2: scenes whose reported bug is the shield art: SHIELD_FULL_PLAN (shields native, Super halved) is tried
+# before SUPER_FULL_PLAN (Super native, shields halved) - the tester's "low resolution" shields came from the latter
+SHIELDS_FIRST = {('CPZ', '1'), ('CPZ', '2')}
 # per folder: event groups, one at a time in the event region: the title card at the act start, the boss where the boss
 # music starts, the sign post / prison where the act-clear music starts
 # 9b.2b: the boss explosions (Explosions.bin 2 / 3) stay resident where level objects make them too: FBZ's missiles and
@@ -1397,22 +1398,26 @@ def boss_side():
 
 def build_fit_share(data, disc_data, folder, scene_id, character='sonic'):
     """build() with the fewest plan steps that fit (full resolution when it all fits): SUPER_SHIELD_FULL_PLAN first (63
-    M3b: the shields native, which costs Chemical Plant's two acts one more effect step - the player region has no column
-    left to give), then SUPER_FULL_PLAN (9l), else HALF_PLAN; 63 M3: the shields stay native when SHIELD_FULL_PLAN fits
-    and costs no boss pixel."""
+    M3b: shields and Super native, which costs Chemical Plant's two acts one more effect step - the player region has no
+    column left to give), then, when the two cannot both be native, the ladder SHIELDS_FIRST names first (CPZ: the
+    shields, the reported bug) and the other after it, else HALF_PLAN; 63 M3: a shields-native step is never taken when
+    it costs a boss pixel."""
     if character == 'sonic':
         res = build_fit_plan(data, disc_data, folder, scene_id, character, SUPER_SHIELD_FULL_PLAN, False)
-        if res is not None and res[0] is not None:
-            return res
-        res = build_fit_plan(data, disc_data, folder, scene_id, character, SUPER_FULL_PLAN, False)
         if res is not None and res[0] is not None:
             return res
     base = build_fit_plan(data, disc_data, folder, scene_id, character, HALF_PLAN, True)
     if base is not None and base[0] is not None:
         base_boss = boss_side()
-        res       = build_fit_plan(data, disc_data, folder, scene_id, character, SHIELD_FULL_PLAN, False)
-        if res is not None and res[0] is not None and boss_side() >= base_boss:
-            return res
+        if character == 'sonic':
+            first = (SHIELD_FULL_PLAN, SUPER_FULL_PLAN) if (folder, scene_id) in SHIELDS_FIRST else (SUPER_FULL_PLAN, SHIELD_FULL_PLAN)
+            for plan in first:
+                res = build_fit_plan(data, disc_data, folder, scene_id, character, plan, False)
+                if res is None or res[0] is None:
+                    continue
+                if plan is SHIELD_FULL_PLAN and boss_side() < base_boss:
+                    continue
+                return res
     return base
 
 
