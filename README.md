@@ -48,7 +48,7 @@ So everything is converted **once, on your computer**, into formats the PS1 hard
 
 Built from the known `Data.rsdk` **without** a license file and with the tool versions listed under
 [Requirements](#requirements) (checked with FFmpeg 9.0.2 and psxavenc v0.3.1-3-gf6757f8), the image is
-`SonicMania-PS1.bin` SHA-256 `2fcfe4f3d9bf0d485085770c3f1c22b6efe09bcf5cf69dff8b8d821a0371c744`. Other versions of FFmpeg or psxavenc
+`SonicMania-PS1.bin` SHA-256 `c4fd65fcd58ed41dbe7c9212becde090c31725d9f9b9ff5e567f85ad11aadca3`. Other versions of FFmpeg or psxavenc
 may encode the audio slightly differently, which changes the hash but not the game. With a license file the license
 sectors differ, so the hash does too.
 
@@ -57,11 +57,13 @@ sectors, the file index, and every file against its source.
 
 ## What's new
 
-Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (November 2026): **the Pinball bonus stage's table is
-drawn** — both floors in perspective with their flippers, bumpers and score display, the scrolling background and the
-backdrop; the endings have their music back, the credits end on the Thanks for Playing artwork, and Time Attack offers
-Mighty and Ray; smaller fixes sharpen sprites and text, stop the click at each music loop and keep Sonic visible during
-the Angel Island warp; the title screen shows `v eaf0f1d8`. Before that: the menus fit the 320-pixel screen; faster and
+Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (November 2026): **a player's report fixed** — the
+Chemical Plant 1 boss shows its bubble again, Sonic no longer disappears on Chemical Plant 2's sticky platforms, the fire
+shield's white edges are gone in Chemical Plant 1, a Blue Sphere jump has its sound, and the sprite set a boss track
+loads is now read a little at a time with the music waiting for it instead of starting into the drive read (the drive's
+own pause still costs a moment); the title screen shows `v 2404f51b`.
+Before that: the Pinball bonus stage's table is drawn, the endings have their music back, the credits end on the Thanks
+for Playing artwork, and Time Attack offers Mighty and Ray. Before that: the menus fit the 320-pixel screen; faster and
 nicer UFO special stages, always at 30 fps with two game steps a frame; every act faster (Studiopolis Act 1 averages 244
 of the 262 units a 60 fps frame has); Frameskip in Options → Video.
 

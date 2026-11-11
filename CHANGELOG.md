@@ -3,6 +3,29 @@
 Updates to the Sonic Mania PS1 ISO Builder, newest first. To get an update, rebuild your disc image with the new
 version of the builder (same steps as in the [README](README.md)).
 
+## A player's report fixed, and boss fights that no longer stall (November 2026)
+
+Fixes for the list a player posted after testing the previous image:
+
+- **The Chemical Plant 1 boss's bubble is back.** The fight's big translucent blob was drawn as a thin blue bar: the
+  game draws it one scanline at a time, and on the PS1 the sprite's texture position cannot follow that.
+- **Sonic no longer disappears on Chemical Plant 2's sticky platforms** - the ones that hold him by a vertical face: his
+  "stuck" pose was missing from that act's sprite set.
+- **The fire shield's white edge pixels are gone in Chemical Plant 1** (the shields are stored at full resolution there
+  again). Chemical Plant 1 has the video memory for it; **Chemical Plant 2 does not**, and its bubble shield still shows
+  the slightly blocky rim - measured, not overlooked.
+- **A Blue Sphere jump has its sound.** The bonus stage's sound banks were missing Sonic's jump sound, so a jump there
+  was silent.
+- **A boss fight's music no longer dies while its sprite set loads.** The set the boss track needs was read in one
+  frame, the read stopped the track, and the track then started straight into the next read; the set is now read a little
+  at a time over several frames and the track starts when it lands. The drive's own pause for a read still costs about a
+  second at Chemical Plant 2's Mean Bean Machine entrance: measured, still open, and named in the port's plan.
+
+Nothing else got coarser: the shields' full resolution costs Chemical Plant 1 extra work at build time only, and the
+effect sprites are halved exactly where they were before.
+
+The title screen shows `v 2404f51b`.
+
 ## The Pinball table is drawn, and fixes across the game (November 2026)
 
 The Mania Plus **Pinball** bonus stage now draws its **table**: both floors in perspective with their flippers, bumpers,
