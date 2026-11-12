@@ -83,9 +83,6 @@ def main():
             run([PY, tool('audio', 'build_sfx.py'), '--char', c, data, sfx] + stages(), env)
     music, video, meshes = (os.path.join(work, d) for d in ('music', 'video', 'meshes'))
     run([PY, tool('audio', 'build_music.py'), data, music], env)
-    # 63 M5: the streamed themes' bodies (Data/Music/<Name>.adp): the Super theme lives in a 2 KiB SPU ring, not in a
-    # bank, so the transformation does not pay a drive stop
-    run([PY, tool('audio', 'build_stream.py'), data, music], env)
     run([PY, tool('fmv', 'build_str.py'), data, video], env)
     run([PY, tool('mesh', 'build_meshes.py'), data, meshes], env)
 
@@ -126,9 +123,8 @@ def main():
             shutil.copyfile(p, os.path.join(D, 'Video', os.path.basename(p)))
     if os.path.isdir(os.path.join(music, 'Music')):
         os.makedirs(os.path.join(D, 'Music'), exist_ok=True)
-        for n in sorted(os.listdir(os.path.join(music, 'Music'))):
-            if n.endswith(('.xa', '.bin', '.adp')):
-                shutil.copyfile(os.path.join(music, 'Music', n), os.path.join(D, 'Music', n))
+        for n in ('Music.xa', 'Music.bin'):
+            shutil.copyfile(os.path.join(music, 'Music', n), os.path.join(D, 'Music', n))
     for p in glob.glob(os.path.join(D, 'Stages', '*', 'PS1Local')):
         shutil.rmtree(p)
     order = os.path.join(work, 'load_order.txt')  # (the work folder's: never the tools' own copy)

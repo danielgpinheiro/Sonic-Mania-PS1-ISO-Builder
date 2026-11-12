@@ -57,13 +57,14 @@ sectors, the file index, and every file against its source.
 
 ## What's new
 
-Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (November 2026): **the loading icon is back** where a
-boss's or Super Sonic's sprite set loads (it had been removed there, so those loads looked like freezes), and the
-memory bookkeeping of the route "finish an act, leave to the main menu, start a new game" is strict — a sprite set's
-load is cancelled before a scene's data is released, and its working area no longer borrows a scene's own memory;
-title screen `v f259fca8`. Before that: a regression fixed — the freeze that could hit when an act was opened after a
-few boss fights is gone, and the act-clear frame no longer loses drawings to a full sprite list; title screen
-`v a1c09634`. Before that: a player's report fixed — the
+Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (November 2026): **back to the version before the
+loading-icon work** — the previous update froze on Chemical Plant 1's loading screen, and this image is the build that
+played the act, its boss, the act clear and the next act without a stall; title screen `v 60ef20a5`. The loading icon
+therefore does not show while a boss's or Super Sonic's sprite set is read, as before that work. Before that: the
+loading icon back where those loads were missing, and strict memory bookkeeping for the route "finish an act, leave to
+the main menu, start a new game" (title screen `v f259fca8`). Before that: a regression fixed — the freeze that could hit
+when an act was opened after a few boss fights is gone, and the act-clear frame no longer loses drawings to a full
+sprite list; title screen `v a1c09634`. Before that: a player's report fixed — the
 Chemical Plant 1 boss shows its bubble again, Sonic no longer disappears on Chemical Plant 2's sticky platforms, the fire
 shield's white edges are gone in Chemical Plant 1, a Blue Sphere jump has its sound, and the sprite set a boss track
 loads is now read a little at a time with the music waiting for it instead of starting into the drive read (the drive's

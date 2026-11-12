@@ -3,6 +3,23 @@
 Updates to the Sonic Mania PS1 ISO Builder, newest first. To get an update, rebuild your disc image with the new
 version of the builder (same steps as in the [README](README.md)).
 
+## Back to the version before the loading-icon work (November 2026)
+
+The previous update froze on Chemical Plant 1's loading screen. This image goes back to the build before it: the version
+that played Chemical Plant 1, its boss, the act clear and the next act without a loading stall — `v 60ef20a5`.
+
+What this means if you tested the previous two images:
+
+- the loading icon no longer shows while a boss fight's or Super Sonic's sprite set is read, as it did not before; those
+  loads can look like a short pause, and that is the state this build restores;
+- the "finish an act, leave to the main menu, start a new game" bookkeeping fixes are gone with it, so the Green Hill 1
+  loading stop reported against an earlier image is unproven again — if it happens, please give the zone, the act, and
+  what you did just before;
+- the Super transformation's music streams from the XA track again (the CD spins it up), not from a small stream on the
+  disc: the pipeline change that put it there was part of the reverted work.
+
+The title screen shows `v 60ef20a5`.
+
 ## The loading icon back where it was missing, and stricter memory bookkeeping (November 2026)
 
 Two items from the last tester's list:
