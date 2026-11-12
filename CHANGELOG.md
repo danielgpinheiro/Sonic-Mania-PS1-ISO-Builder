@@ -3,6 +3,21 @@
 Updates to the Sonic Mania PS1 ISO Builder, newest first. To get an update, rebuild your disc image with the new
 version of the builder (same steps as in the [README](README.md)).
 
+## The loading icon back where it was missing, and stricter memory bookkeeping (November 2026)
+
+Two items from the last tester's list:
+
+- **The loading icon is back in the corner while a boss's or Super Sonic's sprite set loads.** The previous update had
+  taken it out of those loads (its own drawing made the frame that started them lose some sprites), so they looked like
+  freezes. It is drawn again, at no cost to the frame: the icon no longer takes over the memory the drawing needs.
+- **Memory bookkeeping made strict** for the route "finish an act, leave to the main menu, start a new game": a sprite
+  set's load is now cancelled before a scene's data is released, and the load's working area no longer borrows memory a
+  scene keeps for itself. The stop on Green Hill 1's loading screen that was reported against the previous image could
+  not be reproduced with it, so treat this as a correctness fix rather than a confirmed repair - and tell me if it
+  happens again, with the zone, the act and what you did just before.
+
+The title screen shows `v f259fca8`.
+
 ## The freeze when opening an act, fixed (November 2026)
 
 A regression in the previous update: after a few boss fights the game could freeze when an act was opened, with no way
