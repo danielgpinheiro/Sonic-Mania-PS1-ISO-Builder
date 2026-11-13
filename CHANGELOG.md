@@ -3,6 +3,29 @@
 Updates to the Sonic Mania PS1 ISO Builder, newest first. To get an update, rebuild your disc image with the new
 version of the builder (same steps as in the [README](README.md)).
 
+## The Studiopolis van route fixed (November 2026)
+
+One fix on top of the previous image, which played Chemical Plant 1, its boss, the act clear and the next act without a
+loading stall. Nothing else in the image changed.
+
+- **The last TV van in Studiopolis Act 1 no longer carries Sonic out of the stage.** Visiting several of the act's TV
+  vans and then taking the one before the boss could end with Sonic invisible and off the stage (x = 18651,
+  y = −3336), never reaching the exit, with 616 memory-allocation failures behind it. Each van's bumpers were created
+  with their joint positions and rotations left at zero while their update computes all 18 of those values, and an
+  object that goes dormant can only give its memory back when its state matches what its creation left. So every bumper
+  that had ever updated (they are off-screen for most of the route) held on to a memory block; after five vans the pool
+  had none left for the last van's satellites. The bumpers are now created with the state an idle update writes, and
+  the identical seven-van route ends on the rooftop at x = 14783, the way it does when the last van is taken alone.
+  Nothing was made bigger and no gameplay state is discarded.
+
+The title screen shows `v fc400bb3`.
+
+Checked: the image's own byte-by-byte verification (every sector's EDC/ECC, the file index, every file against its
+source), the tree comparison against the port's own disc build (only the Plus assets, `PS1Config.txt`, the `PS1Local`
+indexes, the Super theme's streamed body and the two intro videos differ, as expected), and the van route in the PS1
+emulator (the scenario passes with zero dormant failures; the same scenario fails without this fix). The port's quick
+test tier is 135 PASS, 0 FAIL. The image SHA-256 changes with this build: `0bfa9c430bc6ef9b576eb3729c92174b6949ab52ef0f1994ff02f57412ff4927`.
+
 ## Back to the version before the loading-icon work (November 2026)
 
 The previous update froze on Chemical Plant 1's loading screen. This image goes back to the build before it: the version

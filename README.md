@@ -48,7 +48,7 @@ So everything is converted **once, on your computer**, into formats the PS1 hard
 
 Built from the known `Data.rsdk` **without** a license file and with the tool versions listed under
 [Requirements](#requirements) (checked with FFmpeg 9.0.2 and psxavenc v0.3.1-3-gf6757f8), the image is
-`SonicMania-PS1.bin` SHA-256 `60d60eb077dcefb8ce59df291f2b769257f0ce06e8648b25e9f631ba7195a830`. Other versions of FFmpeg or psxavenc
+`SonicMania-PS1.bin` SHA-256 `0bfa9c430bc6ef9b576eb3729c92174b6949ab52ef0f1994ff02f57412ff4927`. Other versions of FFmpeg or psxavenc
 may encode the audio slightly differently, which changes the hash but not the game. With a license file the license
 sectors differ, so the hash does too.
 
@@ -57,10 +57,13 @@ sectors, the file index, and every file against its source.
 
 ## What's new
 
-Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (November 2026): **back to the version before the
-loading-icon work** — the previous update froze on Chemical Plant 1's loading screen, and this image is the build that
-played the act, its boss, the act clear and the next act without a stall; title screen `v 60ef20a5`. The loading icon
-therefore does not show while a boss's or Super Sonic's sprite set is read, as before that work. Before that: the
+Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (November 2026): **the Studiopolis Act 1 van route
+fixed** — taking several TV vans in the act and then the one before the boss could carry Sonic out of the stage; title
+screen `v fc400bb3`. It is the previous image plus that one fix, so the loading icon still does not show while a boss's
+or Super Sonic's sprite set is read, and the Super transformation's music still streams from the XA track. Before that:
+**back to the version before the loading-icon work** — that earlier update froze on Chemical Plant 1's loading screen,
+and this image is the build that played the act, its boss, the act clear and the next act without a stall; title screen
+`v 60ef20a5`. Before that: the
 loading icon back where those loads were missing, and strict memory bookkeeping for the route "finish an act, leave to
 the main menu, start a new game" (title screen `v f259fca8`). Before that: a regression fixed — the freeze that could hit
 when an act was opened after a few boss fights is gone, and the act-clear frame no longer loses drawings to a full
