@@ -48,7 +48,7 @@ So everything is converted **once, on your computer**, into formats the PS1 hard
 
 Built from the known `Data.rsdk` **without** a license file and with the tool versions listed under
 [Requirements](#requirements) (checked with FFmpeg 9.0.2 and psxavenc v0.3.1-3-gf6757f8), the image is
-`SonicMania-PS1.bin` SHA-256 `0bfa9c430bc6ef9b576eb3729c92174b6949ab52ef0f1994ff02f57412ff4927`. Other versions of FFmpeg or psxavenc
+`SonicMania-PS1.bin` SHA-256 `77af52d79039702d4057c82f498c6809daa31635782cbde590ee1d8d8e275666`. Other versions of FFmpeg or psxavenc
 may encode the audio slightly differently, which changes the hash but not the game. With a license file the license
 sectors differ, so the hash does too.
 
@@ -57,7 +57,10 @@ sectors, the file index, and every file against its source.
 
 ## What's new
 
-Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (November 2026): **the Studiopolis Act 1 van route
+Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (November 2026): **Press Garden Act 1's paper
+rollers drawn faster** — their paper lines cost about 40 % less CPU, flat paper looks the same and sloped paper only
+shifts its one-pixel steps; the UFO stages' character sprite sets are now in the disc's load order; title screen
+`v 8b621b6d`. Before that: **the Studiopolis Act 1 van route
 fixed** — taking several TV vans in the act and then the one before the boss could carry Sonic out of the stage; title
 screen `v fc400bb3`. It is the previous image plus that one fix, so the loading icon still does not show while a boss's
 or Super Sonic's sprite set is read, and the Super transformation's music still streams from the XA track. Before that:

@@ -3,6 +3,26 @@
 Updates to the Sonic Mania PS1 ISO Builder, newest first. To get an update, rebuild your disc image with the new
 version of the builder (same steps as in the [README](README.md)).
 
+## Press Garden's paper rollers drawn faster (November 2026)
+
+Two changes on top of the previous image; nothing else in the game changed.
+
+- **Press Garden Act 1's paper rollers cost less to draw.** The paper lines of each roller are now written straight
+  from their screen points by one resident routine, with no per-line clipping test for the points inside the screen.
+  Measured in the act (PCSX-Redux), the rollers went from 81.5 to 48.6 scanlines of CPU time a frame, and the engine's
+  whole frame from 258 to 225. The pale third outline of a roller whose paper is not bent is now one straight line from
+  its first point to its last: flat paper is pixel-identical, and on sloped paper only the edge's one-pixel steps move.
+- **The UFO special stages' character sprite sets are in the disc's load order.** The Tails, Knuckles, Mighty and Ray
+  sprite sets of the seven UFO stages were on the disc but not in the order the game reads files, so loading a stage
+  had to seek for them instead of reading one continuous run.
+
+The title screen shows `v 8b621b6d`.
+
+Checked: the image's own byte-by-byte verification (every sector's EDC/ECC, the file index, every file against its
+source), the port's quick test tier (119 PASS) and full tier for the roller change, and a Green Hill 1 run that stays
+identical. The image SHA-256 changes with this build:
+`77af52d79039702d4057c82f498c6809daa31635782cbde590ee1d8d8e275666`.
+
 ## The Studiopolis van route fixed (November 2026)
 
 One fix on top of the previous image, which played Chemical Plant 1, its boss, the act clear and the next act without a
