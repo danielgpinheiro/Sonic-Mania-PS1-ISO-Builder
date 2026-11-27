@@ -48,7 +48,7 @@ So everything is converted **once, on your computer**, into formats the PS1 hard
 
 Built from the known `Data.rsdk` **without** a license file and with the tool versions listed under
 [Requirements](#requirements) (checked with FFmpeg 9.0.2 and psxavenc v0.3.1-3-gf6757f8), the image is
-`SonicMania-PS1.bin` SHA-256 `77af52d79039702d4057c82f498c6809daa31635782cbde590ee1d8d8e275666`. Other versions of FFmpeg or psxavenc
+`SonicMania-PS1.bin` SHA-256 `09c0c7ee0e33a561e9021d5ca7a499a9d9f0f7362b4599de5d9b83936699c875`. Other versions of FFmpeg or psxavenc
 may encode the audio slightly differently, which changes the hash but not the game. With a license file the license
 sectors differ, so the hash does too.
 
@@ -57,7 +57,10 @@ sectors, the file index, and every file against its source.
 
 ## What's new
 
-Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (November 2026): **Press Garden Act 1's paper
+Every update is listed in [CHANGELOG.md](CHANGELOG.md). Latest (November 2026): **Press Garden at full
+speed** — the Act 1 paper-roller climb holds 60 fps (the rollers' paper drawn with two passes and no divots), Act 1's
+far background bands move at their own speeds again, and Act 2's wood chippers no longer erase other effects; Flying
+Battery 2 and Hydrocity a little faster; title screen `v a0773b05`. Before that: **Press Garden Act 1's paper
 rollers drawn faster** — their paper lines cost about 40 % less CPU, flat paper looks the same and sloped paper only
 shifts its one-pixel steps; the UFO stages' character sprite sets are now in the disc's load order; title screen
 `v 8b621b6d`. Before that: **the Studiopolis Act 1 van route

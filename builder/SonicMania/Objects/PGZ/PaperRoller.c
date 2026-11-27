@@ -6,6 +6,7 @@
 // ---------------------------------------------------------------------
 
 #include "Game.h"
+#include "../../../ps1/ps1_direct_sprite.h" // docs/perf/57 P25: the rollers' plain-ink sprites
 
 ObjectPaperRoller *PaperRoller;
 
@@ -52,8 +53,41 @@ void PaperRoller_LateUpdate(void) {}
 
 void PaperRoller_StaticUpdate(void) {}
 
+#if defined RETRO_PS1_BUILD
+// P25 (docs/perf/57): a roller whose whole picture is off screen draws nothing: its two rollers, four divots and the
+// paper's lines all fail their own culls (PS1PcClip; a line's two ends past one edge of [-4, 324] x [-4, 244]). It is
+// still in range (updateRange: 128 px past its ends) and drawn, so PSZ1's clusters paid ~2 dozen culled draws a frame.
+// The box: both rollers' centres, grown by the largest of the roller frame's and the divots' extents (their centres
+// 9 px out) and the paper's (24 px out, the passes 2 more), then 16 px more than the line cull's margin. A deformed
+// side (a player on the paper, near the camera) is not judged here
+static int32 PaperRoller_PS1Ext(const Animator *a)
+{
+    const PS1EngineFrame *f = (const PS1EngineFrame *)a->frames + a->frameID;
+    int32 m = abs(f->pivotX), t = abs(f->pivotX + f->width);
+    m = t > m ? t : m, t = abs(f->pivotY), m = t > m ? t : m, t = abs(f->pivotY + f->height);
+    return t > m ? t : m;
+}
+static bool32 PaperRoller_PS1OffScreen(void)
+{
+    RSDK_THIS(PaperRoller);
+    if (self->deformPosTop.y || self->deformPosBottom.y || !self->rollerAnimator.frames || !self->divotAnimator.frames)
+        return false;
+    const RSDKScreenInfo *screen = &ScreenInfo[SceneInfo->currentScreenID];
+    int32 m = PaperRoller_PS1Ext(&self->rollerAnimator), t = PaperRoller_PS1Ext(&self->divotAnimator) + 10;
+    m = (t > m ? t : m) < 27 ? 27 : (t > m ? t : m);
+    m += 4 + 16;
+    const int32 hx = FROM_FIXED((RSDK.Cos256(self->angle) << 7) * self->length), hy = FROM_FIXED((RSDK.Sin256(self->angle) << 7) * self->length);
+    const int32 cx = FROM_FIXED(self->position.x) - screen->position.x, cy = FROM_FIXED(self->position.y) - screen->position.y;
+    const int32 ax = abs(hx) + 1 + m, ay = abs(hy) + 1 + m;
+    return cx + ax < 0 || cx - ax > screen->size.x || cy + ay < 0 || cy - ay > screen->size.y;
+}
+#endif
 void PaperRoller_Draw(void)
 {
+#if defined RETRO_PS1_BUILD
+    if (PaperRoller_PS1OffScreen())
+        return;
+#endif
     PaperRoller_DrawPaperLines();
     PaperRoller_DrawRollers();
 }
@@ -200,6 +234,12 @@ void PaperRoller_DrawDeformedLine(int32 startX, int32 startY, int32 endX, int32 
 #ifndef PS1_PAPER_PALE_LINE
 #define PS1_PAPER_PALE_LINE 1 // P12b M2: a straight side's pale third pass as one line (0: its segments, the stock pixels)
 #endif
+#ifndef PS1_PAPER_RANGE
+#define PS1_PAPER_RANGE 1 // P12c: a straight side's vertices made and handled only around its on-screen run (0: every vertex)
+#endif
+#ifndef PS1_PAPER_PACKED
+#define PS1_PAPER_PACKED PS1_PAPER_RANGE // P12d: a straight side's run as packed vertex words, written by PaperRoller_PS1Packed
+#endif
 // docs/ports/mania/32 9u: PaperRoller_DrawPaperLines' three DrawDeformedLine calls a side compute the same points (only the final
 // offset and the colour differ): the points once (the sines / cosines of the two angles read once, every expression as
 // DrawDeformedLine's), then the three calls' line batches in their order, the offset added to each end as there. PSZ1's
@@ -215,6 +255,10 @@ __attribute__((optimize("O2"))) static int32 PaperRoller_PS1Points(int32 startX,
     int32 count = (self->length / 4) + ((self->length % 4) > 0);
     if (!count || count > 64)
         return count ? -1 : 0;
+#if PS1_PAPER_RANGE
+    if (!deformY)
+        return count; // P12c: a straight side's vertices (start + k * move) are made where they are used (DrawPaperLines)
+#endif
     int32 negAngle = -self->angle & 0xFF;
     int32 sinA = RSDK.Sin256(self->angle), cosA = RSDK.Cos256(self->angle);
     int32 sinN = RSDK.Sin256(negAngle), cosN = RSDK.Cos256(negAngle);
@@ -250,6 +294,84 @@ __attribute__((optimize("O2"))) static int32 PaperRoller_PS1Points(int32 startX,
     }
     return count;
 }
+
+// P12c (docs/perf/57): on a straight side (no deform) vertex k is v0 + k * mv (PaperRoller_PS1Points' running sum), so
+// its screen coordinate FROM_FIXED(v0 + k * mv) - scr is monotonic in k. The first and last k in [0, n] whose screen
+// coordinate lies in [lo, hi] (binary searches on that order); 0 when there is none.
+#if PS1_PAPER_RANGE
+static int32 PaperRoller_PS1Run(int32 v0, int32 mv, int32 n, int32 scr, int32 lo, int32 hi, int32 *first, int32 *last)
+{
+    const bool32 up = FROM_FIXED(v0) <= FROM_FIXED(v0 + n * mv);
+    // first: the least k past the near bound; last: the greatest k before the far bound
+    int32 a = 0, b = n + 1;
+    while (a < b) {
+        const int32 m = (a + b) >> 1, s = FROM_FIXED(v0 + m * mv) - scr;
+        if (up ? s >= lo : s <= hi)
+            b = m;
+        else
+            a = m + 1;
+    }
+    *first = a;
+    a = -1, b = n;
+    while (a < b) {
+        const int32 m = (a + b + 1) >> 1, s = FROM_FIXED(v0 + m * mv) - scr;
+        if (up ? s <= hi : s >= lo)
+            a = m;
+        else
+            b = m - 1;
+    }
+    *last = a;
+    return *first <= *last;
+}
+#endif
+#if PS1_PAPER_PACKED
+// P12d (docs/perf/57): a straight side's lines from one packed vertex list, b[k] = y << 16 | ((x + 0x8000) & 0xFFFF)
+// (screen x, y; |x|, |y| < 1024 at every vertex of the run), and d = (py << 16) + px the pass's offset (|px| <= 2: no carry
+// or borrow out of the biased x; ^ 0x8000 gives the GPU word). A straight side's vertices are monotonic in x and in y, so
+// the lines PS1DrawLineStrip would cull (both ends past one edge of [-4, 324] x [-4, 244]) are a run at each end of the
+// list: trimmed there, and every line between written with no test, into the resident's open line bulk (PS1LineBegin /
+// Next / End). The same lines, the same words, the same bulk bookkeeping as PS1DrawLineStrip (0: a mask colour)
+static inline uint32 PaperRoller_PS1Cull(uint32 a, uint32 b)
+{
+    a ^= 0x8000, b ^= 0x8000;
+    const int32 ax = (int16)a, ay = (int32)a >> 16, bx = (int16)b, by = (int32)b >> 16;
+    return (ax < -4 && bx < -4) || (ax > 324 && bx > 324) || (ay < -4 && by < -4) || (ay > 244 && by > 244);
+}
+__attribute__((optimize("O2"))) static int32 PaperRoller_PS1Packed(const uint32 *b, uint32 d, const uint32 *cmds, int32 n)
+{
+    uint32 *w, *wend;
+    if (!PS1LineBegin(&w, &wend))
+        return 0;
+    const uint32 *e = b + n;
+    for (; b != e; ++b, ++cmds)
+        if (!PaperRoller_PS1Cull(b[0] + d, b[1] + d))
+            break;
+    if (b == e)
+        return 1;
+    while (PaperRoller_PS1Cull(e[-1] + d, e[0] + d))
+        --e; // (stops at the first line, which is not culled)
+    int32 drawn = (int32)(e - b);
+    uint32 pb   = (*b + d) ^ 0x8000;
+    while (b != e) {
+        if (w == wend) {
+            w = PS1LineNext(wend);
+            if (!w) { // (the arena is full: nothing more goes in, as with PS1DrawLineStrip)
+                drawn -= (int32)(e - b), wend = NULL;
+                break;
+            }
+            wend = w + 32 * 4;
+        }
+        const uint32 pa = pb;
+        pb   = (*++b + d) ^ 0x8000;
+        w[0] = *cmds++;
+        w[1] = pa;
+        w[2] = pb;
+        w += 4;
+    }
+    PS1LineEnd(w, wend, drawn);
+    return 1;
+}
+#endif
 
 #endif
 
@@ -342,44 +464,117 @@ void PaperRoller_DrawPaperLines(void)
             for (int32 i = 0; i < 64; ++i) ps1Pale[i] = PS1_PAPER_CMD(0xD0B898u);
         uint8 inner[2][65];
         bool32 off[2];
+        // P12c: the lines handed on are lo[side] .. hi[side] - 1 (vertices lo .. hi); every other line has both ends past
+        // one edge of the cull (below) at every pass, so the writer would have left it out: the same lines, the same words
+        int32 lo[2] = { 0, 0 }, hi[2] = { ps1N1, ps1N2 };
+#if PS1_PAPER_PACKED
+        // P12d (docs/perf/57): a straight side's run as one packed word a vertex (y << 16 | (x + 0x8000) & 0xFFFF: every
+        // pass's offset is one add, the GPU word one xor), its lines written by PaperRoller_PS1Packed with no per-line test;
+        // the world / screen arrays are filled only if a mask colour sends the side to DrawLine (flatFill)
+        uint32 pk[2][65];
+        bool32 flat[2] = { false, false }, flatFill[2] = { false, false };
+        int32 fv0x[2], fv0y[2], fmvx[2], fmvy[2];
+#endif
         for (int32 side = 0; side < 2; ++side) {
             int32 n = side ? ps1N2 : ps1N1;
             int32 x0 = 0x7FFFFFFF, x1 = -0x7FFFFFFF, y0 = 0x7FFFFFFF, y1 = -0x7FFFFFFF;
-            for (int32 k = 0; k <= n && n; ++k) {
-                int32 kx = FROM_FIXED(ps1Vx[side][k]) - scrX, ky = FROM_FIXED(ps1Vy[side][k]) - scrY;
-                sx[side][k] = kx, sy[side][k] = ky;
-                x0 = kx < x0 ? kx : x0, x1 = kx > x1 ? kx : x1, y0 = ky < y0 ? ky : y0, y1 = ky > y1 ? ky : y1;
-                const uint32 in = (uint32)(kx + 2) <= 324u && (uint32)(ky + 2) <= 244u;
-                inner[side][k] = (uint8)in;
+            int32 k0 = 0, k1 = n;
+#if PS1_PAPER_RANGE
+            if (n && !(side ? self->deformPosBottom.y : self->deformPosTop.y)) {
+                // a straight side: its bounding box is its two ends' (monotonic coordinates), as the loop below finds it.
+                // A vertex more than 2 px past an edge of the cull's area (x < -6 or > 326, y < -6 or > 246) is past it at
+                // every pass's offset; the run of vertices inside [-6, 326] x [-6, 246] is one interval [fx, lx] (the
+                // intersection of x's and y's), every vertex before it past the same edge (the bound that ends later) and
+                // every vertex after it too. So only lines fx - 1 .. lx can pass the writer's cull. An empty intersection
+                // keeps every vertex (a side whose x and y runs miss each other: rare, and its lines are not all culled)
+                // (vertex k = v0 + k * mv, PaperRoller_PS1Points' running sum: its start, its (end - start) / count)
+                int32 *vx = ps1Vx[side], *vy = ps1Vy[side];
+                const int32 v0x = side ? startX2 : startX1, v0y = side ? startY2 : startY1;
+                const int32 mvx = ((side ? endX2 : endX1) - v0x) / n, mvy = ((side ? endY2 : endY1) - v0y) / n;
+                vx[0] = v0x, vy[0] = v0y, vx[n] = v0x + n * mvx, vy[n] = v0y + n * mvy;
+                const int32 ax = FROM_FIXED(vx[0]) - scrX, bx = FROM_FIXED(vx[n]) - scrX;
+                const int32 ay = FROM_FIXED(vy[0]) - scrY, by = FROM_FIXED(vy[n]) - scrY;
+                x0 = ax < bx ? ax : bx, x1 = ax < bx ? bx : ax, y0 = ay < by ? ay : by, y1 = ay < by ? by : ay;
+                off[side] = x1 + 2 < -4 || x0 - 2 > 324 || y1 + 2 < -4 || y0 - 2 > 244;
+                if (off[side])
+                    continue;
+                int32 fx, lx, fy, ly;
+                if (PaperRoller_PS1Run(v0x, mvx, n, scrX, -6, 326, &fx, &lx) && PaperRoller_PS1Run(v0y, mvy, n, scrY, -6, 246, &fy, &ly)) {
+                    fx = fx > fy ? fx : fy, lx = lx < ly ? lx : ly;
+                    if (fx <= lx)
+                        k0 = fx ? fx - 1 : 0, k1 = lx < n ? lx + 1 : n;
+                }
+                lo[side] = k0, hi[side] = k1;
+                // the pale pass's one line takes the two ends (M2)
+                sx[side][0] = ax, sy[side][0] = ay, inner[side][0] = (uint8)((uint32)(ax + 2) <= 324u && (uint32)(ay + 2) <= 244u);
+                sx[side][n] = bx, sy[side][n] = by, inner[side][n] = (uint8)((uint32)(bx + 2) <= 324u && (uint32)(by + 2) <= 244u);
+                int32 wx = v0x + k0 * mvx, wy = v0y + k0 * mvy;
+#if PS1_PAPER_PACKED
+                flat[side] = true, fv0x[side] = v0x, fv0y[side] = v0y, fmvx[side] = mvx, fmvy[side] = mvy;
+                for (int32 k = k0; k <= k1; ++k, wx += mvx, wy += mvy)
+                    pk[side][k] = (uint32)(FROM_FIXED(wy) - scrY) << 16 | ((uint32)(FROM_FIXED(wx) - scrX + 0x8000) & 0xFFFF);
+#else
+                for (int32 k = k0; k <= k1; ++k, wx += mvx, wy += mvy) {
+                    vx[k] = wx, vy[k] = wy; // (the world positions: the mask-colour lines below)
+                    int32 kx = FROM_FIXED(wx) - scrX, ky = FROM_FIXED(wy) - scrY;
+                    sx[side][k] = kx, sy[side][k] = ky;
+                    inner[side][k] = (uint8)((uint32)(kx + 2) <= 324u && (uint32)(ky + 2) <= 244u);
+                }
+#endif
             }
-            off[side] = !n || x1 + 2 < -4 || x0 - 2 > 324 || y1 + 2 < -4 || y0 - 2 > 244;
-            if (off[side])
-                continue;
+            else
+#endif
+            {
+                for (int32 k = 0; k <= n && n; ++k) {
+                    int32 kx = FROM_FIXED(ps1Vx[side][k]) - scrX, ky = FROM_FIXED(ps1Vy[side][k]) - scrY;
+                    sx[side][k] = kx, sy[side][k] = ky;
+                    x0 = kx < x0 ? kx : x0, x1 = kx > x1 ? kx : x1, y0 = ky < y0 ? ky : y0, y1 = ky > y1 ? ky : y1;
+                    const uint32 in = (uint32)(kx + 2) <= 324u && (uint32)(ky + 2) <= 244u;
+                    inner[side][k] = (uint8)in;
+                }
+                off[side] = !n || x1 + 2 < -4 || x0 - 2 > 324 || y1 + 2 < -4 || y0 - 2 > 244;
+                if (off[side])
+                    continue;
+            }
             // segment i's colour: colors[(timer + c_i) % n], c_i = DrawDeformedLine's colorID for len L (0 on the top side, len
             // on the bottom one): (L + i) % n, or n - 1 - (L + i) % n when direction is 0. So the index starts at
             // (t + c_0) % n (t = timer % n; t + c_0 < 2n: one subtraction) and steps by +1 (or -1) mod n: no remainder a segment
             const uint32 un = (uint32)n, t = (uint32)Zone->timer % un, r0 = (uint32)(side ? len : 0) % un;
             uint32 q = t + (self->direction ? r0 : un - 1 - r0);
             q = q >= un ? q - un : q;
+            // P12c: only segments k0 .. k1 - 1 are handed on: the walk starts at k0's index (k0 <= n steps from q < n: at most
+            // one wrap either way)
+            if (self->direction) {
+                q += (uint32)k0;
+                q = q >= un ? q - un : q;
+            }
+            else
+                q = q >= (uint32)k0 ? q - (uint32)k0 : q + un - (uint32)k0;
             if (self->direction)
-                for (int32 i = 0; i < n; ++i) {
+                for (int32 i = k0; i < k1; ++i) {
                     const uint32 c = PaperRoller->colors[q];
                     col[side][i] = c, cmd[side][i] = PS1_PAPER_CMD(c);
                     q = q + 1 == un ? 0 : q + 1;
                 }
             else
-                for (int32 i = 0; i < n; ++i) {
+                for (int32 i = k0; i < k1; ++i) {
                     const uint32 c = PaperRoller->colors[q];
                     col[side][i] = c, cmd[side][i] = PS1_PAPER_CMD(c);
                     q = q ? q - 1 : un - 1;
                 }
         }
-        for (int32 v = 0; v < 3; ++v)
+        // PS1_PAPER_PASSES 2 (the default: the simpler roller, user 2026-11-26 from before / after pictures): one coloured
+        // pass, the pale one a pixel in (the paper a pixel thinner); 3: stock's two coloured passes and the pale one
+#ifndef PS1_PAPER_PASSES
+#define PS1_PAPER_PASSES 2
+#endif
+        for (int32 v = 0; v < 3; v += (PS1_PAPER_PASSES == 2 ? 2 : 1))
             for (int32 side = 0; side < 2; ++side) {
                 int32 n = side ? ps1N2 : ps1N1;
                 if (off[side])
                     continue;
-                int32 ox = v * (side ? offsetX2 : offsetX1), oy = v * (side ? offsetY2 : offsetY1);
+                const int32 m = (PS1_PAPER_PASSES == 2 && v == 2) ? 1 : v;
+                int32 ox = m * (side ? offsetX2 : offsetX1), oy = m * (side ? offsetY2 : offsetY1);
                 const int32 px = ox >> 16, py = oy >> 16;
                 const int32 *vx = ps1Vx[side], *vy = ps1Vy[side], *sxs = sx[side], *sys = sy[side];
                 if (strip) {
@@ -397,12 +592,32 @@ void PaperRoller_DrawPaperLines(void)
                     }
                     else
 #endif
-                    if (PS1DrawLineStrip(sxs, sys, inner[side], px, py, v == 2 ? ps1Pale : cmd[side], n))
+#if PS1_PAPER_PACKED
+                    if (flat[side]) {
+                        if (PaperRoller_PS1Packed(pk[side] + lo[side], (uint32)((py << 16) + px), (v == 2 ? ps1Pale : cmd[side]) + lo[side],
+                                              hi[side] - lo[side]))
+                            continue;
+                    }
+                    else
+#endif
+                    if (PS1DrawLineStrip(sxs + lo[side], sys + lo[side], inner[side] + lo[side], px, py,
+                                         (v == 2 ? ps1Pale : cmd[side]) + lo[side], hi[side] - lo[side]))
                         continue;
                     strip = false; // a mask colour: the world lines below from here on
                 }
-                // (a mask colour set: each line through DrawLine, as PS1DrawLinesWorld drew them then)
-                for (int32 i = 0; i < n; ++i) {
+                // (a mask colour set: each line through DrawLine, as PS1DrawLinesWorld drew them then; P12c: the lines out
+                // of lo .. hi - 1 fail this cull)
+#if PS1_PAPER_PACKED
+                if (flat[side] && !flatFill[side]) {
+                    flatFill[side] = true;
+                    int32 *wvx = ps1Vx[side], *wvy = ps1Vy[side], *wsx = sx[side], *wsy = sy[side];
+                    for (int32 k = lo[side]; k <= hi[side]; ++k) {
+                        wvx[k] = fv0x[side] + k * fmvx[side], wvy[k] = fv0y[side] + k * fmvy[side];
+                        wsx[k] = FROM_FIXED(wvx[k]) - scrX, wsy[k] = FROM_FIXED(wvy[k]) - scrY;
+                    }
+                }
+#endif
+                for (int32 i = lo[side]; i < hi[side]; ++i) {
                     int32 sx1 = sxs[i] + px, sy1 = sys[i] + py, sx2 = sxs[i + 1] + px, sy2 = sys[i + 1] + py;
                     if ((sx1 < -4 && sx2 < -4) || (sx1 > 324 && sx2 > 324) || (sy1 < -4 && sy2 < -4) || (sy1 > 244 && sy2 > 244))
                         continue;
@@ -425,6 +640,23 @@ void PaperRoller_DrawPaperLines(void)
     PaperRoller_DrawDeformedLine(startX2, startY2, endX2, endY2, offsetX2, offsetY2, self->deformPosBottom.x, self->deformPosBottom.y, len, &color);
 }
 
+// P25 (docs/perf/57): on the PS1 the rollers' sprites through PS1_DRAW_SPRITE (the same words: plain ink, no FX);
+// PS1_PAPER_DIVOTS 0 (the default: the simpler roller, user 2026-11-26 from before / after pictures) leaves the two
+// divots of each roller out (the dots that show it spin); 1 draws them as stock
+#if defined RETRO_PS1_BUILD
+#ifndef PS1_PAPER_DIVOTS
+#define PS1_PAPER_DIVOTS 0
+#endif
+#define PS1_PAPER_SPRITE(a, p) PS1_DRAW_SPRITE(a, p)
+#if PS1_PAPER_DIVOTS
+#define PS1_PAPER_DIVOT(a, p) PS1_DRAW_SPRITE(a, p)
+#else
+#define PS1_PAPER_DIVOT(a, p) ((void)0)
+#endif
+#else
+#define PS1_PAPER_SPRITE(a, p) RSDK.DrawSprite(a, p, false)
+#define PS1_PAPER_DIVOT(a, p)  RSDK.DrawSprite(a, p, false)
+#endif
 void PaperRoller_DrawRollers(void)
 {
     RSDK_THIS(PaperRoller);
@@ -435,32 +667,32 @@ void PaperRoller_DrawRollers(void)
     rollerPos = self->position;
     rollerPos.x -= (RSDK.Cos256(self->angle) << 7) * self->length;
     rollerPos.y -= (RSDK.Sin256(self->angle) << 7) * self->length;
-    RSDK.DrawSprite(&self->rollerAnimator, &rollerPos, false);
+    PS1_PAPER_SPRITE(&self->rollerAnimator, &rollerPos);
 
     divotPos = rollerPos;
     divotPos.x += -0x900 * RSDK.Cos256(self->divotAngle);
     divotPos.y += -0x900 * RSDK.Sin256(self->divotAngle);
-    RSDK.DrawSprite(&self->divotAnimator, &divotPos, false);
+    PS1_PAPER_DIVOT(&self->divotAnimator, &divotPos);
 
     divotPos = rollerPos;
     divotPos.x += 0x900 * RSDK.Cos256(self->divotAngle);
     divotPos.y += 0x900 * RSDK.Sin256(self->divotAngle);
-    RSDK.DrawSprite(&self->divotAnimator, &divotPos, false);
+    PS1_PAPER_DIVOT(&self->divotAnimator, &divotPos);
 
     rollerPos = self->position;
     rollerPos.x += (RSDK.Cos256(self->angle) << 7) * self->length;
     rollerPos.y += (RSDK.Sin256(self->angle) << 7) * self->length;
-    RSDK.DrawSprite(&self->rollerAnimator, &rollerPos, false);
+    PS1_PAPER_SPRITE(&self->rollerAnimator, &rollerPos);
 
     divotPos = rollerPos;
     divotPos.x += -0x900 * RSDK.Cos256(self->divotAngle);
     divotPos.y += -0x900 * RSDK.Sin256(self->divotAngle);
-    RSDK.DrawSprite(&self->divotAnimator, &divotPos, false);
+    PS1_PAPER_DIVOT(&self->divotAnimator, &divotPos);
 
     divotPos = rollerPos;
     divotPos.x += 0x900 * RSDK.Cos256(self->divotAngle);
     divotPos.y += 0x900 * RSDK.Sin256(self->divotAngle);
-    RSDK.DrawSprite(&self->divotAnimator, &divotPos, false);
+    PS1_PAPER_DIVOT(&self->divotAnimator, &divotPos);
 }
 
 void PaperRoller_HandleRollerCollisions(void)

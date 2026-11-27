@@ -3,6 +3,29 @@
 Updates to the Sonic Mania PS1 ISO Builder, newest first. To get an update, rebuild your disc image with the new
 version of the builder (same steps as in the [README](README.md)).
 
+## Press Garden at full speed, two background fixes (November 2026)
+
+Speed work in Press Garden, Flying Battery 2 and Hydrocity, and two fixes, on top of the previous image.
+
+- **Press Garden Act 1's paper-roller climb now holds 60 fps.** At its busiest point the frame went from 287 to 219
+  scanlines of CPU time (262 is one frame). Most of it is exact: rollers off the screen are no longer drawn, the
+  rollers' straight paper sides are written straight from their on-screen part, and background tiles hidden behind
+  solid foreground tiles are skipped (the picture stays the same). One part is visible: the rollers' paper is drawn
+  with **two passes instead of three and without the small divots**, a simpler look chosen from side-by-side pictures.
+- **Press Garden Act 1's far background no longer slides apart.** Background 2's three bands move at their own speeds
+  again; before, they moved together and jumped sideways when the camera crossed a band edge.
+- **Press Garden Act 2's wood chippers no longer erase other effects.** A log being chipped made more debris pieces
+  than the game's temporary-object slots held, and each extra piece replaced a live effect. The debris now has its
+  own slots. The ice blocks, shards and chipper sprites are also drawn faster.
+- **Faster in Flying Battery Act 2 and Hydrocity:** the junk piles' trash and the water bubbles cost less CPU time;
+  their pictures are the same.
+
+The title screen shows `v a0773b05`.
+
+Checked: the image's own byte-by-byte verification, the port's quick test tier, the Flying Battery 2 memory check,
+the Press Garden 1 speed check and the Green Hill 1 run (identical). The image SHA-256 changes with this build:
+`09c0c7ee0e33a561e9021d5ca7a499a9d9f0f7362b4599de5d9b83936699c875`.
+
 ## Press Garden's paper rollers drawn faster (November 2026)
 
 Two changes on top of the previous image; nothing else in the game changed.
